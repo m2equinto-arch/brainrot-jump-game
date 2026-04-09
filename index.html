@@ -889,7 +889,7 @@ function update() {
         if (gc.collected) return;
         let dx = (player.x + player.w/2) - gc.x;
         let dy = (player.y + player.h/2) - gc.y;
-        if (dx*dx + dy*dy < 30*30) {
+        if (dx*dx + dy*dy < 55*55) {
             gc.collected = true;
             gc.collectAnim = 1;
             coinsThisRun++;
@@ -908,7 +908,7 @@ function update() {
         let gap = 38 + Math.random() * 28 + Math.min(difficulty * 4, 35);
         let ny = hp - gap;
         
-        let numOnLine = Math.random() < 0.3 ? 2 : 1; 
+        let numOnLine = Math.random() < 0.1 ? 2 : 1; 
         let linePlatforms = [];
 
         for (let j = 0; j < numOnLine; j++) {
