@@ -27,6 +27,17 @@ const ctx = canvas.getContext('2d');
 
 // Dynamic full-screen sizing
 let W, H, BORDER_W, PLAY_LEFT, PLAY_RIGHT, PLAY_W;
+
+// ==========================================
+// ÉTAPE 2 : CHARGEMENT DES IMAGES (ICI !)
+// ==========================================
+const imgPatapin = new Image();
+imgPatapin.src = "patapim.png";
+
+const imgSahur = new Image();
+imgSahur.src = "sahur.png";
+// ==========================================
+    
 function resizeCanvas() {
     W = window.innerWidth;
     H = window.innerHeight;
@@ -66,8 +77,8 @@ function saveData() {
 
 // ========== CHARACTERS ==========
 const CHARACTERS = [
-    { id: 'patapin',   name: 'Br Br Patapin',       price: 0,   color: '#6aba38', skin: '#dbb888', nose: true },
-    { id: 'bombardiro', name: 'Bombardiro Crocodilo', price: 150, color: '#2a9a40', skin: '#5aaa50', nose: false },
+    { id: 'patapin', name: 'Br Br Patapin', price: 0, img: imgPatapin },
+    { id: 'tunglung', name: 'Tung Tung Sahur', price: 150, img: imgSahur },
     { id: 'tralala',   name: 'Tralalero Tralala',    price: 200, color: '#e08030', skin: '#f0c080', nose: false },
     { id: 'tunglung',  name: 'Tung Tung Sahur',      price: 300, color: '#4a4a6a', skin: '#7a7a9a', nose: false },
     { id: 'lirili',    name: 'Lirili Larila',        price: 250, color: '#d060a0', skin: '#f0b0d0', nose: false },
