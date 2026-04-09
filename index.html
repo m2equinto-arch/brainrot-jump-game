@@ -362,15 +362,16 @@ function drawCharAt(cx, cy, scale, charId, anim) {
         ctx.save();
         ctx.translate(cx, cy);
         
-        // On gère l'orientation (gauche/droite)
-        ctx.scale(scale, 1); 
+      // On applique l'échelle (scale) sur les deux axes (X et Y)
+        // Math.abs(scale) permet de garder une taille positive même si le perso se retourne
+        ctx.scale(scale, Math.abs(scale)); 
         
         // On ajoute un petit effet de "bobbing" (rebond) pour que ce soit vivant
         let bob = Math.sin((anim || menuBob * 3) * 0.8) * 5;
 
         // On dessine l'image (centrée sur le personnage)
-        // -30, -30 : on décale pour que le centre de l'image soit le point de rotation
-        // 60, 60 : c'est la taille de l'affichage de ton image
+        // -50, -50 : on décale pour que le centre de l'image soit le point de rotation
+        // 100, 100 : c'est la taille de l'affichage de ton image
         ctx.drawImage(ch.img, -50, -50 + bob, 100, 100);
 
         ctx.restore();
