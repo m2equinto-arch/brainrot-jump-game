@@ -174,12 +174,7 @@ function getRandomType(h) {
 function addParticles(x, y, color, count) {
     for (let i = 0; i < count; i++) particles.push({
         x, y, vx: (Math.random()-0.5)*6, vy: (Math.random()-0.5)*6-2,
-        life: 1, decay: 0.02+Math.random()*0.03, size: 3+Math.random()*4, color
-    });
-}
-function addFloatingText(x, y) {
-    floatingTexts.push({ x, y, text: brainrotTexts[Math.floor(Math.random()*brainrotTexts.length)], life: 1, vy: -1.8, size: 16+Math.random()*10 });
-}
+        life: 1, decay: 0.02+Math.random()*0.03, size: 3+Math.random()*4, c
 
 // ========== START / GAMEOVER ==========
 function startGame() {
@@ -197,7 +192,7 @@ function endGame() {
     saveData();
 }
 
-// ========== ING HELPERS ==========
+// ========== DRAWING HELPERS ==========
 function roundRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
@@ -213,33 +208,28 @@ function shadeColor(c, p) {
     let b = Math.min(255,Math.max(0,(n&0xFF)+p));
     return `rgb(${r},${g},${b})`;
 }
-function Btn(x, y, w, h, text, fontSize, isHover) {
-    // 3D button like Pixel Pounce
+function drawBtn(x, y, w, h, text, fontSize, isHover) {
     let r = 14;
     let baseColor = isHover ? '#e8e8e8' : '#f0f0f0';
     let shadowColor = isHover ? '#888' : '#aaa';
     let depth = isHover ? 2 : 4;
-    // Shadow
     ctx.fillStyle = shadowColor;
     roundRect(x, y + depth, w, h, r); ctx.fill();
-    // Face
     let btnGrad = ctx.createLinearGradient(x, y, x, y + h);
     btnGrad.addColorStop(0, '#fff');
     btnGrad.addColorStop(1, baseColor);
     ctx.fillStyle = btnGrad;
     roundRect(x, y, w, h, r); ctx.fill();
-    // Border
     ctx.strokeStyle = '#bbb';
     ctx.lineWidth = 1.5;
     roundRect(x, y, w, h, r); ctx.stroke();
-    // Text
     ctx.fillStyle = '#555';
     ctx.font = `bold ${fontSize}px "Comic Sans MS", sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(text, x + w/2, y + h/2);
     ctx.textBaseline = 'alphabetic';
 }
-function CoinIcon(x, y, size) {
+function drawCoinIcon(x, y, size) {
     ctx.fillStyle = '#ffd700';
     ctx.strokeStyle = '#c8a000';
     ctx.lineWidth = 2;
@@ -251,18 +241,15 @@ function CoinIcon(x, y, size) {
     ctx.textBaseline = 'alphabetic';
 }
 
-// ==========  MENU BACKGROUND ==========
-function MenuBackground() {
+// ========== DRAW MENU BACKGROUND ==========
+function drawMenuBackground() {
     menuBob += 0.02;
-    // Sky
     let skyGrad = ctx.createLinearGradient(0, 0, 0, H);
     skyGrad.addColorStop(0, '#4a9ee0');
     skyGrad.addColorStop(0.5, '#7ac0f0');
     skyGrad.addColorStop(1, '#b0daf8');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, W, H);
-
-    // Clouds
     menuClouds.forEach(c => {
         c.x += c.speed;
         if (c.x > W + c.w) c.x = -c.w;
@@ -271,19 +258,15 @@ function MenuBackground() {
         ctx.beginPath(); ctx.ellipse(c.x - c.w*0.28, c.y+3, c.w*0.32, c.h*0.48, 0, 0, Math.PI*2); ctx.fill();
         ctx.beginPath(); ctx.ellipse(c.x + c.w*0.3, c.y+2, c.w*0.35, c.h*0.5, 0, 0, Math.PI*2); ctx.fill();
     });
-
-    // Forest hills
-    MenuForest(H * 0.62, 'rgba(55,120,45,0.35)', 35, 0.7);
-    MenuForest(H * 0.72, 'rgba(40,95,30,0.45)', 45, 0.5);
-    MenuForest(H * 0.80, 'rgba(30,78,22,0.6)', 55, 0.3);
-    // Ground
+    drawMenuForest(H * 0.62, 'rgba(55,120,45,0.35)', 35, 0.7);
+    drawMenuForest(H * 0.72, 'rgba(40,95,30,0.45)', 45, 0.5);
+    drawMenuForest(H * 0.80, 'rgba(30,78,22,0.6)', 55, 0.3);
     let groundGrad = ctx.createLinearGradient(0, H * 0.88, 0, H);
     groundGrad.addColorStop(0, '#3a8a25');
     groundGrad.addColorStop(0.15, '#2d7a1c');
     groundGrad.addColorStop(1, '#5a3a20');
     ctx.fillStyle = groundGrad;
     ctx.fillRect(0, H * 0.88, W, H * 0.12);
-    // Grass tufts
     ctx.fillStyle = '#4aaa30';
     for (let x = 0; x < W; x += 18) {
         ctx.beginPath();
@@ -292,14 +275,13 @@ function MenuBackground() {
         ctx.fill();
     }
 }
-function MenuForest(baseY, color, treeH, drift) {
+function drawMenuForest(baseY, color, treeH, drift) {
     ctx.fillStyle = color;
     ctx.beginPath(); ctx.moveTo(0, H);
     for (let x = 0; x <= W; x += 15) {
         ctx.lineTo(x, baseY + Math.sin(x * 0.015 + menuBob * drift) * 12);
     }
     ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
-    // Trees
     let treeColor = color.replace(/[\d.]+\)$/, m => (parseFloat(m) + 0.15).toFixed(2) + ')');
     ctx.fillStyle = treeColor;
     for (let x = 8; x < W; x += 30 + Math.sin(x) * 8) {
@@ -310,44 +292,27 @@ function MenuForest(baseY, color, treeH, drift) {
     }
 }
 
-// ========== CLOUD-STYLE TITLE (2 lines, white, no movement) ==========
-function Title(y) {
+function drawTitle(y) {
     let lines = ['BRAINROT', 'JUMP'];
     let sizes = [62, 72];
-
     lines.forEach((line, li) => {
         let fontSize = sizes[li];
         let ly = y + li * 72;
-
         ctx.font = `bold ${fontSize}px "Comic Sans MS", sans-serif`;
         ctx.textAlign = 'center';
-
-        // Soft cloud glow
         ctx.shadowColor = 'rgba(255,255,255,0.9)';
         ctx.shadowBlur = 25;
-        ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-
-        // Outer puffy glow ( multiple times for thickness)
         ctx.strokeStyle = 'rgba(255,255,255,0.3)';
         ctx.lineWidth = 18; ctx.lineJoin = 'round';
         ctx.strokeText(line, W/2, ly);
-
-        // Mid outline
         ctx.strokeStyle = 'rgba(255,255,255,0.5)';
         ctx.lineWidth = 10;
         ctx.strokeText(line, W/2, ly);
-
         ctx.shadowBlur = 0;
-
-        // Drop shadow
         ctx.fillStyle = 'rgba(0,0,0,0.1)';
         ctx.fillText(line, W/2 + 3, ly + 3);
-
-        // White fill
         ctx.fillStyle = '#fff';
         ctx.fillText(line, W/2, ly);
-
-        // Top highlight (brighter white on upper half)
         ctx.save();
         ctx.beginPath();
         ctx.rect(0, ly - fontSize, W, fontSize * 0.5);
@@ -358,38 +323,21 @@ function Title(y) {
     });
 }
 
-// ==========  CHIBI CHARACTER (for menu preview & game) ==========
-function CharAt(cx, cy, scale, charId, anim) {
-    // 1. On trouve quel personnage est sélectionné
+function drawCharAt(cx, cy, scale, charId, anim) {
     let ch = CHARACTERS.find(c => c.id === charId) || CHARACTERS[0];
-
-    // 2. Si le personnage a une image (img), on l'affiche
     if (ch.img) {
         ctx.save();
         ctx.translate(cx, cy);
-        
-      // On applique l'échelle (scale) sur les deux axes (X et Y)
-        // Math.abs(scale) permet de garder une taille positive même si le perso se retourne
         ctx.scale(scale, Math.abs(scale)); 
-        
-        // On ajoute un petit effet de "bobbing" (rebond) pour que ce soit vivant
         let bob = Math.sin((anim || menuBob * 3) * 0.8) * 5;
-
-        // On dessine l'image (centrée sur le personnage)
-        // -50, -50 : on décale pour que le centre de l'image soit le point de rotation
-        // 100, 100 : c'est la taille de l'affichage de ton image
-        ctx.Image(ch.img, -60, -60 + bob, 120, 120);
-
+        ctx.drawImage(ch.img, -60, -60 + bob, 120, 120);
         ctx.restore();
     }
 }
 
-// ==========  GAME PLAYER ==========
-function Player() {
+function drawPlayer() {
     if (!player) return;
     let px = player.x, py = player.y - cameraY;
-
-    // Leaf trail
     player.trail.forEach(tr => {
         ctx.globalAlpha = tr.life * 0.2;
         ctx.fillStyle = '#7cb342';
@@ -398,42 +346,32 @@ function Player() {
     });
     player.trail = player.trail.filter(tr => tr.life > 0);
     ctx.globalAlpha = 1;
-
-    // Animate squash/stretch back to normal
     player.squash += (1 - player.squash) * 0.15;
     player.stretch += (1 - player.stretch) * 0.15;
-
-    //  character with facing direction
     let scale = player.facing;
-    CharAt(px + player.w/2, py + player.h/2, scale, selectedChar, gameTime * 0.06);
+    drawCharAt(px + player.w/2, py + player.h/2, scale, selectedChar, gameTime * 0.06);
 }
 
-// ========== PLATFORMS ==========
-function Platform(p) {
+function drawPlatform(p) {
     let py = p.y - cameraY;
     if (py > H + 25 || py < -25) return;
     ctx.globalAlpha = p.opacity;
     let pw = p.w, ph = p.h;
-
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
     roundRect(p.x+2, py+3, pw, ph, 5); ctx.fill();
-
     let dirt = '#8B5E3C', grass = '#5aaa30', outline = '#4a2a10';
     if (p.type===PLAT_MOVING) { dirt='#6a7a8a'; grass='#40a0b0'; outline='#3a4a5a'; }
     else if (p.type===PLAT_BREAKING) { dirt='#9a5050'; grass='#c06060'; outline='#5a2020'; }
     else if (p.type===PLAT_BOOST) { dirt='#8a7030'; grass='#e0c030'; outline='#5a4a10'; }
     else if (p.type===PLAT_CRACKED) { dirt='#7a6040'; grass='#8a9050'; outline='#4a3020'; }
-
     let dg = ctx.createLinearGradient(p.x, py+6, p.x, py+ph);
     dg.addColorStop(0, dirt); dg.addColorStop(1, shadeColor(dirt, -25));
     ctx.fillStyle = dg;
     roundRect(p.x, py+5-p.bounceAnim, pw, ph-5, 4); ctx.fill();
-
     let gg = ctx.createLinearGradient(p.x, py-p.bounceAnim, p.x, py+8-p.bounceAnim);
     gg.addColorStop(0, shadeColor(grass, 20)); gg.addColorStop(1, grass);
     ctx.fillStyle = gg;
     roundRect(p.x, py-p.bounceAnim, pw, 10, 5); ctx.fill();
-
     ctx.fillStyle = shadeColor(grass, 30);
     for (let g = 0; g < 6; g++) {
         let gx = p.x + 8 + g * (pw-16)/5, gy = py - 2 - p.bounceAnim;
@@ -441,10 +379,8 @@ function Platform(p) {
     }
     ctx.strokeStyle = outline; ctx.lineWidth = 1.8;
     roundRect(p.x, py-p.bounceAnim, pw, ph, 5); ctx.stroke();
-
     if (p.type === PLAT_BOOST) { ctx.font='bold 16px sans-serif'; ctx.textAlign='center'; ctx.fillText('🍄', p.x+pw/2, py-4-p.bounceAnim); }
     if (p.type === PLAT_MOVING) { ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='11px sans-serif'; ctx.textAlign='center'; ctx.fillText(p.moveDir>0?'>>>':'<<<', p.x+pw/2, py+15-p.bounceAnim); }
-
     if (p.type === PLAT_CRACKED) {
         ctx.strokeStyle = 'rgba(50,30,10,0.4)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(p.x+20,py-p.bounceAnim+3); ctx.lineTo(p.x+26,py-p.bounceAnim+ph/2+2); ctx.lineTo(p.x+22,py-p.bounceAnim+ph-3); ctx.stroke();
@@ -466,15 +402,13 @@ function Platform(p) {
     ctx.globalAlpha = 1;
 }
 
-// ========== GAME BACKGROUND ==========
-function GameBackground() {
+function drawGameBackground() {
     let skyGrad = ctx.createLinearGradient(0,0,0,H);
     let sh = Math.min(score*0.05, 30);
     skyGrad.addColorStop(0, `hsl(${210-sh*0.3},75%,${58+sh*0.2}%)`);
     skyGrad.addColorStop(0.6, `hsl(${200-sh*0.2},70%,${72+sh*0.1}%)`);
     skyGrad.addColorStop(1, 'hsl(195,65%,82%)');
     ctx.fillStyle = skyGrad; ctx.fillRect(0,0,W,H);
-
     cloudPositions.forEach(c => {
         let cy = ((c.baseY - cameraY*0.15)%(H+300)+H+300)%(H+300)-150;
         let cx = c.x + Math.sin(gameTime*c.speed+c.phase)*10;
@@ -483,34 +417,27 @@ function GameBackground() {
         ctx.beginPath(); ctx.ellipse(cx-c.w*0.3,cy+4,c.w*0.35,c.h*0.5,0,0,Math.PI*2); ctx.fill();
         ctx.beginPath(); ctx.ellipse(cx+c.w*0.3,cy+3,c.w*0.38,c.h*0.52,0,0,Math.PI*2); ctx.fill();
     });
-
-    GameForest(0.08, H*0.7, 'rgba(60,110,50,0.3)', 40);
-    GameForest(0.06, H*0.78, 'rgba(45,90,35,0.35)', 50);
-    GameForest(0.04, H*0.85, 'rgba(35,75,25,0.4)', 60);
+    drawGameForest(0.08, H*0.7, 'rgba(60,110,50,0.3)', 40);
+    drawGameForest(0.06, H*0.78, 'rgba(45,90,35,0.35)', 50);
+    drawGameForest(0.04, H*0.85, 'rgba(35,75,25,0.4)', 60);
 }
-function GameForest(scrollSpeed, baseY, color, treeH) {
+function drawGameForest(scrollSpeed, baseY, color, treeH) {
     let y = baseY + ((cameraY * scrollSpeed) % 50);
     ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,H);
     for (let x = 0; x <= W; x += 20) ctx.lineTo(x, y + Math.sin(x*0.02+cameraY*scrollSpeed*0.5)*15);
     ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
 }
 
-// ========== HUD ==========
-function HUD() {
-    // Score
+function drawHUD() {
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     roundRect(12,12,170,42,12); ctx.fill();
     ctx.fillStyle = '#3a3a3a'; ctx.font = 'bold 24px "Comic Sans MS", sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(`Score: ${score}`, 24, 40);
-
-    // Coins this run
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     roundRect(W-130,12,118,34,10); ctx.fill();
-    CoinIcon(W-115, 29, 10);
+    drawCoinIcon(W-115, 29, 10);
     ctx.fillStyle = '#555'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(`${coins + coinsThisRun}`, W-100, 34);
-
-    // Pause button (top center)
     ctx.fillStyle = isHover(W/2-20, 8, 40, 40) ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.65)';
     ctx.beginPath(); ctx.arc(W/2, 28, 20, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1.5;
@@ -520,202 +447,123 @@ function HUD() {
     ctx.fillRect(W/2+1.5, 18, 4.5, 20);
 }
 
-// ========== PAUSE SCREEN ==========
-function Paused() {
-    //  the game frozen behind
-    GameBackground();
-    platforms.forEach(p => Platform(p));
-    Player();
-    HUD();
-
-    // Dark overlay
+function drawPaused() {
+    drawGameBackground();
+    platforms.forEach(p => drawPlatform(p));
+    drawPlayer();
+    drawHUD();
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(0, 0, W, H);
-
-    // Pause card
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
     roundRect(W/2-150, H/2-130, 300, 260, 20); ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
-    roundRect(W/2-150, H/2-130, 300, 260, 20); ctx.stroke();
-
-    // Title
     ctx.fillStyle = '#444'; ctx.font = 'bold 36px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('PAUSE', W/2, H/2 - 80);
-
-    // Score
     ctx.fillStyle = '#777'; ctx.font = 'bold 18px "Comic Sans MS", sans-serif';
     ctx.fillText(`Score: ${score}`, W/2, H/2 - 45);
-
-    // Resume button
-    Btn(W/2-100, H/2-20, 200, 50, '▶  Reprendre', 20, isHover(W/2-100, H/2-20, 200, 50));
-
-    // Menu button
-    Btn(W/2-100, H/2+45, 200, 45, '🏠  Menu', 18, isHover(W/2-100, H/2+45, 200, 45));
+    drawBtn(W/2-100, H/2-20, 200, 50, '▶  Reprendre', 20, isHover(W/2-100, H/2-20, 200, 50));
+    drawBtn(W/2-100, H/2+45, 200, 45, '🏠  Menu', 18, isHover(W/2-100, H/2+45, 200, 45));
 }
 
-// ========== MENU SCREEN ==========
-function Menu() {
-    MenuBackground();
-
-    // Title (2 lines, cloud style)
-    Title(80);
-
-    // High Score (big, prominent)
+function drawMenu() {
+    drawMenuBackground();
+    drawTitle(80);
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     roundRect(W/2 - 130, 185, 260, 60, 16); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1;
-    roundRect(W/2 - 130, 185, 260, 60, 16); ctx.stroke();
     ctx.fillStyle = '#666'; ctx.font = 'bold 16px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('MEILLEUR SCORE', W/2, 207);
     ctx.fillStyle = '#333'; ctx.font = 'bold 34px "Comic Sans MS", sans-serif';
     ctx.fillText(highScore, W/2, 240);
-
-    // Coin display (top right)
     ctx.fillStyle = 'rgba(255,255,255,0.65)';
     roundRect(W - 145, 18, 126, 40, 12); ctx.fill();
-    CoinIcon(W - 128, 38, 11);
+    drawCoinIcon(W - 128, 38, 11);
     ctx.fillStyle = '#444'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(coins, W - 112, 44);
-
-    // Character preview (centered)
-    CharAt(W/2, 370, 1.8, selectedChar, menuBob * 3);
-
-    // Character name pill
+    drawCharAt(W/2, 370, 1.8, selectedChar, menuBob * 3);
     let charName = (CHARACTERS.find(c => c.id === selectedChar) || CHARACTERS[0]).name;
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     roundRect(W/2 - 105, 455, 210, 30, 10); ctx.fill();
     ctx.fillStyle = '#555'; ctx.font = 'bold 15px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(charName, W/2, 475);
-
-    // Play button (big)
-    Btn(W/2 - 100, 505, 200, 58, '▶  JOUER', 28, isHover(W/2-100, 505, 200, 58));
-
-    // Shop button
-    Btn(W/2 - 100, 580, 200, 48, '🛒  Boutique', 20, isHover(W/2-100, 580, 200, 48));
-
-    // Controls hint
+    drawBtn(W/2 - 100, 505, 200, 58, '▶  JOUER', 28, isHover(W/2-100, 505, 200, 58));
+    drawBtn(W/2 - 100, 580, 200, 48, '🛒  Boutique', 20, isHover(W/2-100, 580, 200, 48));
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('Fleches / WASD / Souris / Touch', W/2, H - 25);
 }
 
-// ========== GAME OVER SCREEN ==========
-function GameOver() {
-    MenuBackground();
-
-    // Title
+function drawGameOver() {
+    drawMenuBackground();
     ctx.font = 'bold 52px "Comic Sans MS", sans-serif';
     ctx.textAlign = 'center';
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 5;
     ctx.strokeText('YOU FELL!', W/2, 120);
     ctx.fillStyle = '#ff5555';
     ctx.fillText('YOU FELL!', W/2, 120);
-
-    // Character
-    CharAt(W/2, 260, 1.5, selectedChar, menuBob * 3);
-
-    // Score card
+    drawCharAt(W/2, 260, 1.5, selectedChar, menuBob * 3);
     ctx.fillStyle = 'rgba(255,255,255,0.75)';
     roundRect(W/2 - 140, 350, 280, 130, 16); ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
-    roundRect(W/2 - 140, 350, 280, 130, 16); ctx.stroke();
-
     ctx.fillStyle = '#444'; ctx.font = 'bold 18px "Comic Sans MS", sans-serif';
     ctx.fillText('Score', W/2, 380);
     ctx.fillStyle = '#222'; ctx.font = 'bold 40px "Comic Sans MS", sans-serif';
     ctx.fillText(score, W/2, 420);
-
     ctx.fillStyle = '#888'; ctx.font = 'bold 15px sans-serif';
     ctx.fillText(`Meilleur: ${highScore}`, W/2, 450);
-
-    // Coins earned
-    ctx.fillStyle = '#555'; ctx.font = 'bold 16px sans-serif';
-    CoinIcon(W/2 - 35, 470, 10);
+    drawCoinIcon(W/2 - 35, 470, 10);
     ctx.textAlign = 'left';
     ctx.fillText(`+${coinsThisRun}`, W/2 - 20, 475);
     ctx.textAlign = 'center';
-
-    // Buttons
-    Btn(W/2 - 90, 510, 180, 50, 'REJOUER', 22, isHover(W/2-90, 510, 180, 50));
-    Btn(W/2 - 90, 575, 180, 45, '🏠  Menu', 18, isHover(W/2-90, 575, 180, 45));
+    drawBtn(W/2 - 90, 510, 180, 50, 'REJOUER', 22, isHover(W/2-90, 510, 180, 50));
+    drawBtn(W/2 - 90, 575, 180, 45, '🏠  Menu', 18, isHover(W/2-90, 575, 180, 45));
 }
 
-// ========== SHOP SCREEN ==========
-function Shop() {
-    MenuBackground();
-
-    // Title bar
+function drawShop() {
+    drawMenuBackground();
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     roundRect(20, 15, W - 40, 55, 14); ctx.fill();
-
     ctx.fillStyle = '#444'; ctx.font = 'bold 28px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('BOUTIQUE', W/2, 50);
-
-    // Coin display
-    CoinIcon(W - 100, 42, 12);
+    drawCoinIcon(W - 100, 42, 12);
     ctx.fillStyle = '#444'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(coins, W - 82, 48);
-
-    // Back button
-    Btn(22, 22, 80, 40, '< Retour', 13, isHover(22, 22, 80, 40));
-
-    // Character cards
+    drawBtn(22, 22, 80, 40, '< Retour', 13, isHover(22, 22, 80, 40));
     let cardW = 190, cardH = 240, gap = 20;
     let cols = 3;
     let startX = (W - cols * cardW - (cols-1) * gap) / 2;
     let startY = 90;
-
     CHARACTERS.forEach((ch, i) => {
         let col = i % cols, row = Math.floor(i / cols);
         let cx = startX + col * (cardW + gap);
         let cy = startY + row * (cardH + gap);
-
         let owned = unlockedChars.includes(ch.id);
         let isSelected = selectedChar === ch.id;
-
-        // Card bg
         ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)';
         roundRect(cx, cy, cardW, cardH, 12); ctx.fill();
         if (isSelected) {
             ctx.strokeStyle = '#4a9ee0'; ctx.lineWidth = 3;
             roundRect(cx, cy, cardW, cardH, 12); ctx.stroke();
-        } else {
-            ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
-            roundRect(cx, cy, cardW, cardH, 12); ctx.stroke();
         }
-
-        // Character preview
         if (!owned) ctx.globalAlpha = 0.4;
-        CharAt(cx + cardW/2, cy + 100, 1.1, ch.id, menuBob * 3 + i);
+        drawCharAt(cx + cardW/2, cy + 100, 1.1, ch.id, menuBob * 3 + i);
         ctx.globalAlpha = 1;
-
-        // Name
         ctx.fillStyle = '#444'; ctx.font = 'bold 13px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(ch.name, cx + cardW/2, cy + 170);
-
-        // Button
         if (owned && isSelected) {
             ctx.fillStyle = '#4a9ee0';
             roundRect(cx + 20, cy + 190, cardW - 40, 35, 10); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText('EQUIPE', cx + cardW/2, cy + 207);
             ctx.textBaseline = 'alphabetic';
         } else if (owned) {
-            Btn(cx + 20, cy + 190, cardW - 40, 35, 'Choisir', 14, isHover(cx+20, cy+190, cardW-40, 35));
+            drawBtn(cx + 20, cy + 190, cardW - 40, 35, 'Choisir', 14, isHover(cx+20, cy+190, cardW-40, 35));
         } else {
-            // Buy button
             let canBuy = coins >= ch.price;
             ctx.fillStyle = canBuy ? '#4aaa30' : '#aaa';
             roundRect(cx + 20, cy + 190, cardW - 40, 35, 10); ctx.fill();
-            CoinIcon(cx + 55, cy + 207, 8);
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            drawCoinIcon(cx + 55, cy + 207, 8);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(ch.price, cx + 75, cy + 207);
             ctx.textBaseline = 'alphabetic';
         }
-
-        // Lock icon
         if (!owned) {
             ctx.fillStyle = 'rgba(0,0,0,0.15)';
             roundRect(cx, cy, cardW, cardH, 12); ctx.fill();
@@ -725,59 +573,42 @@ function Shop() {
     });
 }
 
-// ========== MOUSE TRACKING ==========
 let mouseX = 0, mouseY = 0;
 canvas.addEventListener('mousemove', e => {
     let rect = canvas.getBoundingClientRect();
     let scaleX = W / rect.width, scaleY = H / rect.height;
     mouseX = (e.clientX - rect.left) * scaleX;
     mouseY = (e.clientY - rect.top) * scaleY;
-
     if (gameState === 'playing') {
         if (mouseX < W * 0.4) { keys.left = true; keys.right = false; }
         else if (mouseX > W * 0.6) { keys.right = true; keys.left = false; }
         else { keys.left = false; keys.right = false; }
     }
 });
-canvas.addEventListener('mouseleave', () => { keys.left = false; keys.right = false; mouseX = -1; mouseY = -1; });
 
 function isHover(x, y, w, h) {
     return mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h;
 }
 
-// ========== CLICK HANDLING ==========
 canvas.addEventListener('click', e => {
     let rect = canvas.getBoundingClientRect();
     let scaleX = W / rect.width, scaleY = H / rect.height;
     let cx = (e.clientX - rect.left) * scaleX;
     let cy = (e.clientY - rect.top) * scaleY;
-
     if (gameState === 'playing') {
-        // Pause button (circle at top center, radius 20 centered at W/2, 28)
         let dx = cx - W/2, dy = cy - 28;
         if (dx*dx + dy*dy < 25*25) { gameState = 'paused'; keys.left = false; keys.right = false; return; }
-    }
-    else if (gameState === 'paused') {
-        // Resume button
+    } else if (gameState === 'paused') {
         if (cx > W/2-100 && cx < W/2+100 && cy > H/2-20 && cy < H/2+30) { gameState = 'playing'; return; }
-        // Menu button
         if (cx > W/2-100 && cx < W/2+100 && cy > H/2+45 && cy < H/2+90) { gameState = 'menu'; return; }
-    }
-    else if (gameState === 'menu') {
-        // Play button
+    } else if (gameState === 'menu') {
         if (cx > W/2-100 && cx < W/2+100 && cy > 505 && cy < 563) startGame();
-        // Shop button
         if (cx > W/2-100 && cx < W/2+100 && cy > 580 && cy < 628) gameState = 'shop';
-    }
-    else if (gameState === 'gameover') {
+    } else if (gameState === 'gameover') {
         if (cx > W/2-90 && cx < W/2+90 && cy > 510 && cy < 560) startGame();
         if (cx > W/2-90 && cx < W/2+90 && cy > 575 && cy < 620) gameState = 'menu';
-    }
-    else if (gameState === 'shop') {
-        // Back button
+    } else if (gameState === 'shop') {
         if (cx > 22 && cx < 102 && cy > 22 && cy < 62) { gameState = 'menu'; return; }
-
-        // Character cards
         let cardW = 190, cardH = 240, gap = 20, cols = 3;
         let startX = (W - cols*cardW - (cols-1)*gap) / 2;
         let startY = 90;
@@ -787,26 +618,19 @@ canvas.addEventListener('click', e => {
             let by = startY + row*(cardH+gap) + 190;
             if (cx > bx && cx < bx+cardW-40 && cy > by && cy < by+35) {
                 let owned = unlockedChars.includes(ch.id);
-                if (owned) {
-                    selectedChar = ch.id;
-                    saveData();
-                } else if (coins >= ch.price) {
-                    coins -= ch.price;
-                    unlockedChars.push(ch.id);
-                    selectedChar = ch.id;
-                    saveData();
+                if (owned) { selectedChar = ch.id; saveData(); }
+                else if (coins >= ch.price) {
+                    coins -= ch.price; unlockedChars.push(ch.id); selectedChar = ch.id; saveData();
                 }
             }
         });
     }
 });
 
-// ========== KEYBOARD ==========
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         if (gameState === 'playing') { gameState = 'paused'; keys.left = false; keys.right = false; }
         else if (gameState === 'paused') { gameState = 'playing'; }
-        return;
     }
     if (gameState !== 'playing') return;
     if (e.key==='ArrowLeft'||e.key==='a'||e.key==='q') keys.left=true;
@@ -816,54 +640,30 @@ document.addEventListener('keyup', e => {
     if (e.key==='ArrowLeft'||e.key==='a'||e.key==='q') keys.left=false;
     if (e.key==='ArrowRight'||e.key==='d') keys.right=false;
 });
-canvas.addEventListener('touchstart', e => {
-    e.preventDefault(); isTouching = true;
-    touchCurrentX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
-    // Simulate click for menus
-    let rect = canvas.getBoundingClientRect();
-    let scaleX = W / rect.width, scaleY = H / rect.height;
-    mouseX = (e.touches[0].clientX - rect.left) * scaleX;
-    mouseY = (e.touches[0].clientY - rect.top) * scaleY;
-    canvas.dispatchEvent(new MouseEvent('click', { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }));
-});
-canvas.addEventListener('touchmove', e => {
-    e.preventDefault();
-    touchCurrentX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
-});
-canvas.addEventListener('touchend', e => { e.preventDefault(); isTouching = false; });
 
-// ========== GAME UPDATE ==========
 function update() {
     if (gameState !== 'playing') return;
     gameTime++;
-
     if (keys.left) { player.vx = -player.speed; player.facing = -1; }
     else if (keys.right) { player.vx = player.speed; player.facing = 1; }
-    else if (isTouching) {
-        let diff = touchCurrentX - canvas.getBoundingClientRect().width/2;
-        player.vx = Math.max(-player.speed, Math.min(player.speed, diff * 0.04));
-        if (diff !== 0) player.facing = diff > 0 ? 1 : -1;
-    } else { player.vx *= 0.85; }
-
+    else { player.vx *= 0.85; }
     player.x += player.vx;
     player.vy += player.gravity;
     player.y += player.vy;
-
     if (player.x > PLAY_RIGHT) player.x = PLAY_LEFT - player.w;
     if (player.x + player.w < PLAY_LEFT) player.x = PLAY_RIGHT;
-
     if (Math.abs(player.vy) > 2) player.trail.push({ x: player.x, y: player.y, life: 1 });
-
     let targetCam = player.y - H * 0.4;
     if (targetCam < cameraY) cameraY += (targetCam - cameraY) * 0.1;
-
     let newScore = Math.floor(-cameraY / 10);
     if (newScore > score) {
+        if (score <= highScore && newScore > highScore && highScore > 0) {
+            addFloatingText(W/2, 100);
+            addParticles(W/2, H/2, '#ffd700', 20);
+        }
         score = newScore;
         difficulty = 1 + Math.floor(score / 500);
     }
-
-// Collision
     if (player.vy > 0) {
         platforms.forEach(p => {
             if (p.breaking && p.breakTimer > 10) return;
@@ -872,106 +672,68 @@ function update() {
             if (on) {
                 if (p.type === PLAT_BREAKING) { p.breaking = true; addParticles(p.x+p.w/2, p.y, '#9a5050', 10); return; }
                 if (p.type === PLAT_CRACKED) {
-                    if (p.bounced) { p.breaking = true; addParticles(p.x+p.w/2, p.y, '#7a6040', 14); addFloatingText(p.x+p.w/2, p.y-cameraY); return; }
-                    else { p.bounced = true; addParticles(p.x+p.w/2, p.y, '#7a6040', 6); }
+                    if (p.bounced) { p.breaking = true; addParticles(p.x+p.w/2, p.y, '#7a6040', 14); return; }
+                    else { p.bounced = true; }
                 }
                 player.vy = p.type===PLAT_BOOST ? player.jumpForce*1.8 : player.jumpForce;
                 player.squash = 1.3; player.stretch = 0.7;
-                p.bounceAnim = 5; platformCount++;
-                addParticles(player.x+player.w/2, player.y+player.h, '#5aaa30', 6);
-                if (Math.random() < 0.3 || p.type===PLAT_BOOST) addFloatingText(player.x+player.w/2, player.y-cameraY);
+                p.bounceAnim = 5;
             }
         });
     }
-
-    // Coin collection
     gameCoins.forEach(gc => {
         if (gc.collected) return;
         let dx = (player.x + player.w/2) - gc.x;
         let dy = (player.y + player.h/2) - gc.y;
         if (dx*dx + dy*dy < 55*55) {
-            gc.collected = true;
-            gc.collectAnim = 1;
-            coinsThisRun++;
-            addParticles(gc.x, gc.y, '#ffd700', 8);
+            gc.collected = true; gc.collectAnim = 1;
+            coinsThisRun++; addParticles(gc.x, gc.y, '#ffd700', 8);
         }
     });
-
     platforms.forEach(p => {
         if (p.type===PLAT_MOVING) { p.x += p.moveSpeed*p.moveDir; if (p.x<=PLAY_LEFT||p.x+p.w>=PLAY_RIGHT) p.moveDir*=-1; }
         if (p.breaking) { p.breakTimer++; p.opacity=Math.max(0,1-p.breakTimer/15); p.y+=p.breakTimer*0.5; }
     });
-
-    // --- GÉNÉRATION INFINIE AVEC SÉCURITÉ (WHILE) ---
     let hp = Math.min(...platforms.map(p => p.y));
     while (hp > cameraY - 100) {
         let gap = 38 + Math.random() * 28 + Math.min(difficulty * 4, 35);
         let ny = hp - gap;
-        
         let numOnLine = Math.random() < 0.1 ? 2 : 1; 
         let linePlatforms = [];
-
         for (let j = 0; j < numOnLine; j++) {
             let nx = PLAY_LEFT + Math.random() * (PLAY_W - 85);
             let type = getRandomType(100);
             linePlatforms.push({x: nx, y: ny, type: type});
         }
-
-        // Sécurité : au moins une plateforme solide si tout est fragile
         let allFragile = linePlatforms.every(p => p.type === PLAT_BREAKING || p.type === PLAT_CRACKED);
-        if (allFragile) {
-            linePlatforms[0].type = PLAT_NORMAL;
-        }
-
-        // Ajout des plateformes validées
+        if (allFragile) { linePlatforms[0].type = PLAT_NORMAL; }
         linePlatforms.forEach(p => {
             platforms.push(createPlatform(p.x, p.y, p.type));
             if (Math.random() < 0.3) {
-                gameCoins.push({
-                    x: p.x + 20 + Math.random() * 45,
-                    y: p.y - 30 - Math.random() * 25,
-                    collected: false, collectAnim: 0
-                });
+                gameCoins.push({ x: p.x + 20 + Math.random() * 45, y: p.y - 30 - Math.random() * 25, collected: false, collectAnim: 0 });
             }
         });
-        hp = ny; // On remonte pour la prochaine boucle
+        hp = ny;
     }
-
-    // More clouds
-    let hc = Math.min(...cloudPositions.map(c=>c.baseY));
-    while (hc > cameraY-500) {
-        cloudPositions.push({ x:Math.random()*W, baseY:hc-200-Math.random()*150, w:60+Math.random()*80, h:25+Math.random()*15, speed:0.02+Math.random()*0.03, phase:Math.random()*Math.PI*2 });
-        hc = cloudPositions[cloudPositions.length-1].baseY;
-    }
-
     platforms = platforms.filter(p => p.y-cameraY < H+50 && p.opacity > 0);
-    // Update & cleanup coins
     gameCoins.forEach(gc => { if (gc.collected) gc.collectAnim -= 0.05; });
     gameCoins = gameCoins.filter(gc => gc.y - cameraY < H + 50 && (!gc.collected || gc.collectAnim > 0));
-    if (cloudPositions.length > 40) cloudPositions.splice(0, cloudPositions.length-40);
-
     particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.1; p.life-=p.decay; });
     particles = particles.filter(p => p.life > 0);
     floatingTexts.forEach(f => { f.y+=f.vy; f.life-=0.015; });
     floatingTexts = floatingTexts.filter(f => f.life > 0);
-
     if (player.y - cameraY > H + 50) endGame();
 }
 
-// ========== DRAW ==========
 function draw() {
     if (gameState === 'menu') { drawMenu(); return; }
     if (gameState === 'shop') { drawShop(); return; }
     if (gameState === 'gameover') { drawGameOver(); return; }
     if (gameState === 'paused') { drawPaused(); return; }
 
-    // 1. Le ciel et le décor lointain (tout au fond)
     drawGameBackground();
-
-    // 2. Les plateformes
     platforms.forEach(p => drawPlatform(p));
 
-    // --- LIGNE DE HIGH SCORE ---
     if (highScore > 0) {
         let hsY = (-highScore * 10) - cameraY;
         if (hsY > -50 && hsY < H + 50) {
@@ -983,7 +745,6 @@ function draw() {
             ctx.moveTo(PLAY_LEFT, hsY);
             ctx.lineTo(PLAY_RIGHT, hsY);
             ctx.stroke();
-            
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.font = 'bold 16px "Comic Sans MS", sans-serif';
             ctx.textAlign = 'right';
@@ -992,85 +753,48 @@ function draw() {
         }
     }
 
-    // 3. Les pièces
     gameCoins.forEach(gc => {
         let cy = gc.y - cameraY;
         if (cy < -20 || cy > H + 20) return;
-        if (gc.collected) {
-            ctx.globalAlpha = gc.collectAnim;
-            cy -= (1 - gc.collectAnim) * 30;
-        }
+        if (gc.collected) { ctx.globalAlpha = gc.collectAnim; cy -= (1 - gc.collectAnim) * 30; }
         let bobY = Math.sin(gameTime * 0.08 + gc.x * 0.1) * 3;
         ctx.fillStyle = 'rgba(255,215,0,0.2)';
         ctx.beginPath(); ctx.arc(gc.x, cy + bobY, 16, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffd700';
-        ctx.strokeStyle = '#c8a000';
-        ctx.lineWidth = 2;
+        ctx.fillStyle = '#ffd700'; ctx.strokeStyle = '#c8a000'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(gc.x, cy + bobY, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.strokeStyle = '#e8c020';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(gc.x, cy + bobY, 6.5, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = '#b8900a';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('$', gc.x, cy + bobY + 1);
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.beginPath(); ctx.ellipse(gc.x - 3, cy + bobY - 3, 3, 2, -0.4, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
     });
 
-    // 4. Le personnage (Dessiné après les pièces mais avant les murs)
     if (gameState === 'playing') drawPlayer();
-
-    // 5. LES MURS (Dessinés au premier plan)
     drawSideWalls(); 
 
-    // 6. Les effets visuels (particules et textes)
     particles.forEach(p => {
         ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
-        ctx.beginPath(); ctx.arc(p.x, p.y - cameraY, p.size * p.life, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y-cameraY, p.size*p.life, 0, Math.PI*2); ctx.fill();
     });
     ctx.globalAlpha = 1;
-
     floatingTexts.forEach(f => {
         ctx.globalAlpha = f.life;
         ctx.font = `bold ${f.size}px "Comic Sans MS", sans-serif`; ctx.textAlign = 'center';
-        ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 3;
-        ctx.strokeText(f.text, f.x, f.y);
-        ctx.fillStyle = '#fff';
-        ctx.fillText(f.text, f.x, f.y);
+        ctx.strokeText(f.text, f.x, f.y); ctx.fillStyle = '#fff'; ctx.fillText(f.text, f.x, f.y);
     });
     ctx.globalAlpha = 1;
-
-    // 7. L'interface (HUD)
     if (gameState === 'playing') drawHUD();
 }
 
-// ========== MAIN LOOP ==========
 function gameLoop() {
-    menuBob += 0.02;
     update();
     draw();
     requestAnimationFrame(gameLoop);
 }
 
-// ========== SideWalls ==========
 function drawSideWalls() {
-    // Création d'un dégradé qui va du noir vers un vert sombre
     let gradL = ctx.createLinearGradient(0, 0, BORDER_W, 0);
-    gradL.addColorStop(0, "#050a05");
-    gradL.addColorStop(1, "#1a3a15");
-
-    ctx.fillStyle = gradL;
-    ctx.fillRect(0, 0, BORDER_W, H); // Mur gauche
-
+    gradL.addColorStop(0, "#050a05"); gradL.addColorStop(1, "#1a3a15");
+    ctx.fillStyle = gradL; ctx.fillRect(0, 0, BORDER_W, H);
     let gradR = ctx.createLinearGradient(PLAY_RIGHT, 0, W, 0);
-    gradR.addColorStop(0, "#1a3a15");
-    gradR.addColorStop(1, "#050a05");
-
-    ctx.fillStyle = gradR;
-    ctx.fillRect(PLAY_RIGHT, 0, BORDER_W, H); // Mur droit
+    gradR.addColorStop(0, "#1a3a15"); gradR.addColorStop(1, "#050a05");
+    ctx.fillStyle = gradR; ctx.fillRect(PLAY_RIGHT, 0, BORDER_W, H);
 }
 requestAnimationFrame(gameLoop);
 </script>
