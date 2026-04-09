@@ -997,7 +997,8 @@ function draw() {
         ctx.beginPath(); ctx.ellipse(gc.x - 3, cy + bobY - 3, 3, 2, -0.4, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
     });
-        if (highScore > 0) {
+    
+    if (highScore > 0) {
         let hsY = (-highScore * 10) - cameraY;
         if (hsY > -50 && hsY < H + 50) {
             ctx.save();
@@ -1015,6 +1016,7 @@ function draw() {
             ctx.restore();
         }
     }
+    
     // 3. Le personnage (il est au milieu pour pouvoir être caché par les murs)
     if (gameState === 'playing') drawPlayer();
 
