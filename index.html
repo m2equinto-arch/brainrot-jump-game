@@ -863,7 +863,7 @@ function update() {
         difficulty = 1 + Math.floor(score / 500);
     }
 
-    // Collision
+// Collision
     if (player.vy > 0) {
         platforms.forEach(p => {
             if (p.breaking && p.breakTimer > 10) return;
@@ -902,44 +902,39 @@ function update() {
         if (p.breaking) { p.breakTimer++; p.opacity=Math.max(0,1-p.breakTimer/15); p.y+=p.breakTimer*0.5; }
     });
 
-    let hp = Math.min(...platforms.map(p=>p.y));
-    let gap = 38 + Math.random() * 28 + Math.min(difficulty * 4, 35);
-    let ny = hp - gap;
-    
-    // On définit combien de plateformes on veut sur cette ligne (souvent 1 ou 2)
-    // Plus le score est haut, plus 'numOnLine' risque d'être petit (1 seul choix)
-    let numOnLine = Math.random() < 0.3 ? 2 : 1; 
-    let linePlatforms = [];
-
-    for (let j = 0; j < numOnLine; j++) {
-        let nx = PLAY_LEFT + Math.random() * (PLAY_W - 85);
-        let type = getRandomType(100);
-        linePlatforms.push({x: nx, y: ny, type: type});
-    }
-
-    // --- LA SÉCURITÉ : VÉRIFICATION DU CHEMIN POSSIBLE ---
-    // On vérifie si TOUTES les plateformes sur cette ligne sont fragiles (BREAKING ou CRACKED)
-    let allFragile = linePlatforms.every(p => p.type === PLAT_BREAKING || p.type === PLAT_CRACKED);
-
-    // Si elles sont toutes fragiles, on force la première à devenir NORMALE
-    if (allFragile) {
-        linePlatforms[0].type = PLAT_NORMAL;
-    }
-
-    // On ajoute enfin les plateformes validées au jeu
-    linePlatforms.forEach(p => {
-        platforms.push(createPlatform(p.x, p.y, p.type));
+    // --- GÉNÉRATION INFINIE AVEC SÉCURITÉ (WHILE) ---
+    let hp = Math.min(...platforms.map(p => p.y));
+    while (hp > cameraY - 100) {
+        let gap = 38 + Math.random() * 28 + Math.min(difficulty * 4, 35);
+        let ny = hp - gap;
         
-        // Spawn d'une pièce optionnelle
-        if (Math.random() < 0.3) {
-            gameCoins.push({
-                x: p.x + 20 + Math.random() * 45,
-                y: p.y - 30 - Math.random() * 25,
-                collected: false, collectAnim: 0
-            });
+        let numOnLine = Math.random() < 0.3 ? 2 : 1; 
+        let linePlatforms = [];
+
+        for (let j = 0; j < numOnLine; j++) {
+            let nx = PLAY_LEFT + Math.random() * (PLAY_W - 85);
+            let type = getRandomType(100);
+            linePlatforms.push({x: nx, y: ny, type: type});
         }
-     });
-        hp = ny;
+
+        // Sécurité : au moins une plateforme solide si tout est fragile
+        let allFragile = linePlatforms.every(p => p.type === PLAT_BREAKING || p.type === PLAT_CRACKED);
+        if (allFragile) {
+            linePlatforms[0].type = PLAT_NORMAL;
+        }
+
+        // Ajout des plateformes validées
+        linePlatforms.forEach(p => {
+            platforms.push(createPlatform(p.x, p.y, p.type));
+            if (Math.random() < 0.3) {
+                gameCoins.push({
+                    x: p.x + 20 + Math.random() * 45,
+                    y: p.y - 30 - Math.random() * 25,
+                    collected: false, collectAnim: 0
+                });
+            }
+        });
+        hp = ny; // On remonte pour la prochaine boucle
     }
 
     // More clouds
