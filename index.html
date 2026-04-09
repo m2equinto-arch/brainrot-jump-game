@@ -958,7 +958,7 @@ function update() {
     if (player.y - cameraY > H + 50) endGame();
 }
 
-// ==========  ==========
+// ========== DRAW ==========
 function draw() {
     if (gameState === 'menu') { drawMenu(); return; }
     if (gameState === 'shop') { drawShop(); return; }
@@ -968,9 +968,31 @@ function draw() {
     // 1. Le ciel et le décor lointain (tout au fond)
     drawGameBackground();
 
-    // 2. Les plateformes et les pièces (le joueur rebondit dessus)
+    // 2. Les plateformes
     platforms.forEach(p => drawPlatform(p));
 
+    // --- LIGNE DE HIGH SCORE ---
+    if (highScore > 0) {
+        let hsY = (-highScore * 10) - cameraY;
+        if (hsY > -50 && hsY < H + 50) {
+            ctx.save();
+            ctx.setLineDash([10, 10]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(PLAY_LEFT, hsY);
+            ctx.lineTo(PLAY_RIGHT, hsY);
+            ctx.stroke();
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = 'bold 16px "Comic Sans MS", sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('MEILLEUR SCORE  🏁', PLAY_RIGHT - 10, hsY - 10);
+            ctx.restore();
+        }
+    }
+
+    // 3. Les pièces
     gameCoins.forEach(gc => {
         let cy = gc.y - cameraY;
         if (cy < -20 || cy > H + 20) return;
@@ -997,36 +1019,17 @@ function draw() {
         ctx.beginPath(); ctx.ellipse(gc.x - 3, cy + bobY - 3, 3, 2, -0.4, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
     });
-    
-    if (highScore > 0) {
-        let hsY = (-highScore * 10) - cameraY;
-        if (hsY > -50 && hsY < H + 50) {
-            ctx.save();
-            ctx.setLineDash([10, 10]);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(PLAY_LEFT, hsY);
-            ctx.lineTo(PLAY_RIGHT, hsY);
-            ctx.stroke();
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.font = 'bold 16px "Comic Sans MS", sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText('MEILLEUR SCORE  🏁', PLAY_RIGHT - 10, hsY - 10);
-            ctx.restore();
-        }
-    }
-    
-    // 3. Le personnage (il est au milieu pour pouvoir être caché par les murs)
+
+    // 4. Le personnage (Dessiné après les pièces mais avant les murs)
     if (gameState === 'playing') drawPlayer();
 
-    // 4. LES MURS (Dessinés APRÈS le joueur pour passer au PREMIER PLAN)
+    // 5. LES MURS (Dessinés au premier plan)
     drawSideWalls(); 
 
-    // 5. Les effets visuels (particules de saut et textes "brainrot")
+    // 6. Les effets visuels (particules et textes)
     particles.forEach(p => {
         ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
-        ctx.beginPath(); ctx.arc(p.x, p.y-cameraY, p.size*p.life, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y - cameraY, p.size * p.life, 0, Math.PI * 2); ctx.fill();
     });
     ctx.globalAlpha = 1;
 
@@ -1040,7 +1043,7 @@ function draw() {
     });
     ctx.globalAlpha = 1;
 
-    // 6. L'interface (Score et bouton pause, toujours tout devant)
+    // 7. L'interface (HUD)
     if (gameState === 'playing') drawHUD();
 }
 
