@@ -197,7 +197,7 @@ function endGame() {
     saveData();
 }
 
-// ========== DRAWING HELPERS ==========
+// ========== ING HELPERS ==========
 function roundRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
@@ -213,7 +213,7 @@ function shadeColor(c, p) {
     let b = Math.min(255,Math.max(0,(n&0xFF)+p));
     return `rgb(${r},${g},${b})`;
 }
-function drawBtn(x, y, w, h, text, fontSize, isHover) {
+function Btn(x, y, w, h, text, fontSize, isHover) {
     // 3D button like Pixel Pounce
     let r = 14;
     let baseColor = isHover ? '#e8e8e8' : '#f0f0f0';
@@ -239,7 +239,7 @@ function drawBtn(x, y, w, h, text, fontSize, isHover) {
     ctx.fillText(text, x + w/2, y + h/2);
     ctx.textBaseline = 'alphabetic';
 }
-function drawCoinIcon(x, y, size) {
+function CoinIcon(x, y, size) {
     ctx.fillStyle = '#ffd700';
     ctx.strokeStyle = '#c8a000';
     ctx.lineWidth = 2;
@@ -251,8 +251,8 @@ function drawCoinIcon(x, y, size) {
     ctx.textBaseline = 'alphabetic';
 }
 
-// ========== DRAW MENU BACKGROUND ==========
-function drawMenuBackground() {
+// ==========  MENU BACKGROUND ==========
+function MenuBackground() {
     menuBob += 0.02;
     // Sky
     let skyGrad = ctx.createLinearGradient(0, 0, 0, H);
@@ -273,9 +273,9 @@ function drawMenuBackground() {
     });
 
     // Forest hills
-    drawMenuForest(H * 0.62, 'rgba(55,120,45,0.35)', 35, 0.7);
-    drawMenuForest(H * 0.72, 'rgba(40,95,30,0.45)', 45, 0.5);
-    drawMenuForest(H * 0.80, 'rgba(30,78,22,0.6)', 55, 0.3);
+    MenuForest(H * 0.62, 'rgba(55,120,45,0.35)', 35, 0.7);
+    MenuForest(H * 0.72, 'rgba(40,95,30,0.45)', 45, 0.5);
+    MenuForest(H * 0.80, 'rgba(30,78,22,0.6)', 55, 0.3);
     // Ground
     let groundGrad = ctx.createLinearGradient(0, H * 0.88, 0, H);
     groundGrad.addColorStop(0, '#3a8a25');
@@ -292,7 +292,7 @@ function drawMenuBackground() {
         ctx.fill();
     }
 }
-function drawMenuForest(baseY, color, treeH, drift) {
+function MenuForest(baseY, color, treeH, drift) {
     ctx.fillStyle = color;
     ctx.beginPath(); ctx.moveTo(0, H);
     for (let x = 0; x <= W; x += 15) {
@@ -311,7 +311,7 @@ function drawMenuForest(baseY, color, treeH, drift) {
 }
 
 // ========== CLOUD-STYLE TITLE (2 lines, white, no movement) ==========
-function drawTitle(y) {
+function Title(y) {
     let lines = ['BRAINROT', 'JUMP'];
     let sizes = [62, 72];
 
@@ -327,7 +327,7 @@ function drawTitle(y) {
         ctx.shadowBlur = 25;
         ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
 
-        // Outer puffy glow (draw multiple times for thickness)
+        // Outer puffy glow ( multiple times for thickness)
         ctx.strokeStyle = 'rgba(255,255,255,0.3)';
         ctx.lineWidth = 18; ctx.lineJoin = 'round';
         ctx.strokeText(line, W/2, ly);
@@ -358,8 +358,8 @@ function drawTitle(y) {
     });
 }
 
-// ========== DRAW CHIBI CHARACTER (for menu preview & game) ==========
-function drawCharAt(cx, cy, scale, charId, anim) {
+// ==========  CHIBI CHARACTER (for menu preview & game) ==========
+function CharAt(cx, cy, scale, charId, anim) {
     // 1. On trouve quel personnage est sélectionné
     let ch = CHARACTERS.find(c => c.id === charId) || CHARACTERS[0];
 
@@ -378,14 +378,14 @@ function drawCharAt(cx, cy, scale, charId, anim) {
         // On dessine l'image (centrée sur le personnage)
         // -50, -50 : on décale pour que le centre de l'image soit le point de rotation
         // 100, 100 : c'est la taille de l'affichage de ton image
-        ctx.drawImage(ch.img, -60, -60 + bob, 120, 120);
+        ctx.Image(ch.img, -60, -60 + bob, 120, 120);
 
         ctx.restore();
     }
 }
 
-// ========== DRAW GAME PLAYER ==========
-function drawPlayer() {
+// ==========  GAME PLAYER ==========
+function Player() {
     if (!player) return;
     let px = player.x, py = player.y - cameraY;
 
@@ -403,13 +403,13 @@ function drawPlayer() {
     player.squash += (1 - player.squash) * 0.15;
     player.stretch += (1 - player.stretch) * 0.15;
 
-    // Draw character with facing direction
+    //  character with facing direction
     let scale = player.facing;
-    drawCharAt(px + player.w/2, py + player.h/2, scale, selectedChar, gameTime * 0.06);
+    CharAt(px + player.w/2, py + player.h/2, scale, selectedChar, gameTime * 0.06);
 }
 
 // ========== PLATFORMS ==========
-function drawPlatform(p) {
+function Platform(p) {
     let py = p.y - cameraY;
     if (py > H + 25 || py < -25) return;
     ctx.globalAlpha = p.opacity;
@@ -467,7 +467,7 @@ function drawPlatform(p) {
 }
 
 // ========== GAME BACKGROUND ==========
-function drawGameBackground() {
+function GameBackground() {
     let skyGrad = ctx.createLinearGradient(0,0,0,H);
     let sh = Math.min(score*0.05, 30);
     skyGrad.addColorStop(0, `hsl(${210-sh*0.3},75%,${58+sh*0.2}%)`);
@@ -484,11 +484,11 @@ function drawGameBackground() {
         ctx.beginPath(); ctx.ellipse(cx+c.w*0.3,cy+3,c.w*0.38,c.h*0.52,0,0,Math.PI*2); ctx.fill();
     });
 
-    drawGameForest(0.08, H*0.7, 'rgba(60,110,50,0.3)', 40);
-    drawGameForest(0.06, H*0.78, 'rgba(45,90,35,0.35)', 50);
-    drawGameForest(0.04, H*0.85, 'rgba(35,75,25,0.4)', 60);
+    GameForest(0.08, H*0.7, 'rgba(60,110,50,0.3)', 40);
+    GameForest(0.06, H*0.78, 'rgba(45,90,35,0.35)', 50);
+    GameForest(0.04, H*0.85, 'rgba(35,75,25,0.4)', 60);
 }
-function drawGameForest(scrollSpeed, baseY, color, treeH) {
+function GameForest(scrollSpeed, baseY, color, treeH) {
     let y = baseY + ((cameraY * scrollSpeed) % 50);
     ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,H);
     for (let x = 0; x <= W; x += 20) ctx.lineTo(x, y + Math.sin(x*0.02+cameraY*scrollSpeed*0.5)*15);
@@ -496,7 +496,7 @@ function drawGameForest(scrollSpeed, baseY, color, treeH) {
 }
 
 // ========== HUD ==========
-function drawHUD() {
+function HUD() {
     // Score
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     roundRect(12,12,170,42,12); ctx.fill();
@@ -506,7 +506,7 @@ function drawHUD() {
     // Coins this run
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     roundRect(W-130,12,118,34,10); ctx.fill();
-    drawCoinIcon(W-115, 29, 10);
+    CoinIcon(W-115, 29, 10);
     ctx.fillStyle = '#555'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(`${coins + coinsThisRun}`, W-100, 34);
 
@@ -521,12 +521,12 @@ function drawHUD() {
 }
 
 // ========== PAUSE SCREEN ==========
-function drawPaused() {
-    // Draw the game frozen behind
-    drawGameBackground();
-    platforms.forEach(p => drawPlatform(p));
-    drawPlayer();
-    drawHUD();
+function Paused() {
+    //  the game frozen behind
+    GameBackground();
+    platforms.forEach(p => Platform(p));
+    Player();
+    HUD();
 
     // Dark overlay
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
@@ -547,18 +547,18 @@ function drawPaused() {
     ctx.fillText(`Score: ${score}`, W/2, H/2 - 45);
 
     // Resume button
-    drawBtn(W/2-100, H/2-20, 200, 50, '▶  Reprendre', 20, isHover(W/2-100, H/2-20, 200, 50));
+    Btn(W/2-100, H/2-20, 200, 50, '▶  Reprendre', 20, isHover(W/2-100, H/2-20, 200, 50));
 
     // Menu button
-    drawBtn(W/2-100, H/2+45, 200, 45, '🏠  Menu', 18, isHover(W/2-100, H/2+45, 200, 45));
+    Btn(W/2-100, H/2+45, 200, 45, '🏠  Menu', 18, isHover(W/2-100, H/2+45, 200, 45));
 }
 
 // ========== MENU SCREEN ==========
-function drawMenu() {
-    drawMenuBackground();
+function Menu() {
+    MenuBackground();
 
     // Title (2 lines, cloud style)
-    drawTitle(80);
+    Title(80);
 
     // High Score (big, prominent)
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
@@ -573,12 +573,12 @@ function drawMenu() {
     // Coin display (top right)
     ctx.fillStyle = 'rgba(255,255,255,0.65)';
     roundRect(W - 145, 18, 126, 40, 12); ctx.fill();
-    drawCoinIcon(W - 128, 38, 11);
+    CoinIcon(W - 128, 38, 11);
     ctx.fillStyle = '#444'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(coins, W - 112, 44);
 
     // Character preview (centered)
-    drawCharAt(W/2, 370, 1.8, selectedChar, menuBob * 3);
+    CharAt(W/2, 370, 1.8, selectedChar, menuBob * 3);
 
     // Character name pill
     let charName = (CHARACTERS.find(c => c.id === selectedChar) || CHARACTERS[0]).name;
@@ -588,10 +588,10 @@ function drawMenu() {
     ctx.fillText(charName, W/2, 475);
 
     // Play button (big)
-    drawBtn(W/2 - 100, 505, 200, 58, '▶  JOUER', 28, isHover(W/2-100, 505, 200, 58));
+    Btn(W/2 - 100, 505, 200, 58, '▶  JOUER', 28, isHover(W/2-100, 505, 200, 58));
 
     // Shop button
-    drawBtn(W/2 - 100, 580, 200, 48, '🛒  Boutique', 20, isHover(W/2-100, 580, 200, 48));
+    Btn(W/2 - 100, 580, 200, 48, '🛒  Boutique', 20, isHover(W/2-100, 580, 200, 48));
 
     // Controls hint
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
@@ -600,8 +600,8 @@ function drawMenu() {
 }
 
 // ========== GAME OVER SCREEN ==========
-function drawGameOver() {
-    drawMenuBackground();
+function GameOver() {
+    MenuBackground();
 
     // Title
     ctx.font = 'bold 52px "Comic Sans MS", sans-serif';
@@ -612,7 +612,7 @@ function drawGameOver() {
     ctx.fillText('YOU FELL!', W/2, 120);
 
     // Character
-    drawCharAt(W/2, 260, 1.5, selectedChar, menuBob * 3);
+    CharAt(W/2, 260, 1.5, selectedChar, menuBob * 3);
 
     // Score card
     ctx.fillStyle = 'rgba(255,255,255,0.75)';
@@ -630,19 +630,19 @@ function drawGameOver() {
 
     // Coins earned
     ctx.fillStyle = '#555'; ctx.font = 'bold 16px sans-serif';
-    drawCoinIcon(W/2 - 35, 470, 10);
+    CoinIcon(W/2 - 35, 470, 10);
     ctx.textAlign = 'left';
     ctx.fillText(`+${coinsThisRun}`, W/2 - 20, 475);
     ctx.textAlign = 'center';
 
     // Buttons
-    drawBtn(W/2 - 90, 510, 180, 50, 'REJOUER', 22, isHover(W/2-90, 510, 180, 50));
-    drawBtn(W/2 - 90, 575, 180, 45, '🏠  Menu', 18, isHover(W/2-90, 575, 180, 45));
+    Btn(W/2 - 90, 510, 180, 50, 'REJOUER', 22, isHover(W/2-90, 510, 180, 50));
+    Btn(W/2 - 90, 575, 180, 45, '🏠  Menu', 18, isHover(W/2-90, 575, 180, 45));
 }
 
 // ========== SHOP SCREEN ==========
-function drawShop() {
-    drawMenuBackground();
+function Shop() {
+    MenuBackground();
 
     // Title bar
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
@@ -652,12 +652,12 @@ function drawShop() {
     ctx.fillText('BOUTIQUE', W/2, 50);
 
     // Coin display
-    drawCoinIcon(W - 100, 42, 12);
+    CoinIcon(W - 100, 42, 12);
     ctx.fillStyle = '#444'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(coins, W - 82, 48);
 
     // Back button
-    drawBtn(22, 22, 80, 40, '< Retour', 13, isHover(22, 22, 80, 40));
+    Btn(22, 22, 80, 40, '< Retour', 13, isHover(22, 22, 80, 40));
 
     // Character cards
     let cardW = 190, cardH = 240, gap = 20;
@@ -686,7 +686,7 @@ function drawShop() {
 
         // Character preview
         if (!owned) ctx.globalAlpha = 0.4;
-        drawCharAt(cx + cardW/2, cy + 100, 1.1, ch.id, menuBob * 3 + i);
+        CharAt(cx + cardW/2, cy + 100, 1.1, ch.id, menuBob * 3 + i);
         ctx.globalAlpha = 1;
 
         // Name
@@ -702,13 +702,13 @@ function drawShop() {
             ctx.fillText('EQUIPE', cx + cardW/2, cy + 207);
             ctx.textBaseline = 'alphabetic';
         } else if (owned) {
-            drawBtn(cx + 20, cy + 190, cardW - 40, 35, 'Choisir', 14, isHover(cx+20, cy+190, cardW-40, 35));
+            Btn(cx + 20, cy + 190, cardW - 40, 35, 'Choisir', 14, isHover(cx+20, cy+190, cardW-40, 35));
         } else {
             // Buy button
             let canBuy = coins >= ch.price;
             ctx.fillStyle = canBuy ? '#4aaa30' : '#aaa';
             roundRect(cx + 20, cy + 190, cardW - 40, 35, 10); ctx.fill();
-            drawCoinIcon(cx + 55, cy + 207, 8);
+            CoinIcon(cx + 55, cy + 207, 8);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(ch.price, cx + 75, cy + 207);
@@ -958,7 +958,7 @@ function update() {
     if (player.y - cameraY > H + 50) endGame();
 }
 
-// ========== DRAW ==========
+// ==========  ==========
 function draw() {
     if (gameState === 'menu') { drawMenu(); return; }
     if (gameState === 'shop') { drawShop(); return; }
@@ -997,7 +997,24 @@ function draw() {
         ctx.beginPath(); ctx.ellipse(gc.x - 3, cy + bobY - 3, 3, 2, -0.4, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
     });
-
+        if (highScore > 0) {
+        let hsY = (-highScore * 10) - cameraY;
+        if (hsY > -50 && hsY < H + 50) {
+            ctx.save();
+            ctx.setLineDash([10, 10]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(PLAY_LEFT, hsY);
+            ctx.lineTo(PLAY_RIGHT, hsY);
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = 'bold 16px "Comic Sans MS", sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('MEILLEUR SCORE  🏁', PLAY_RIGHT - 10, hsY - 10);
+            ctx.restore();
+        }
+    }
     // 3. Le personnage (il est au milieu pour pouvoir être caché par les murs)
     if (gameState === 'playing') drawPlayer();
 
