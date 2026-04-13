@@ -1,1280 +1,260 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brainrot Jump</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; }
-        body {
-            background: #0a1a0a;
-            display: flex; justify-content: center; align-items: center;
-            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
-            user-select: none;
-        }
-        #gameContainer { position: relative; width: 100vw; height: 100vh; cursor: pointer; }
-        canvas { display: block; width: 100%; height: 100%; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Films Cultes — Dashboard</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --text: #2c2c2a;
+    --text-muted: #5f5e5a;
+    --text-soft: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-strong: rgba(0,0,0,0.22);
+    --accent: #378ADD;
+    --danger: #A32D2D;
+    --star: #BA7517;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #242422;
+      --surface-2: #2e2e2c;
+      --text: #f1efe8;
+      --text-muted: #b4b2a9;
+      --text-soft: #888780;
+      --border: rgba(255,255,255,0.14);
+      --border-strong: rgba(255,255,255,0.25);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1 { font-size: 26px; font-weight: 500; margin: 0 0 0.25rem; }
+  .subtitle { color: var(--text-muted); font-size: 14px; margin: 0 0 1.75rem; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--surface-2); border-radius: var(--radius); padding: 1rem; }
+  .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+  .stat-value { font-size: 24px; font-weight: 500; }
+  .panel { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .panel-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+  .form-grid { display: grid; grid-template-columns: 2fr 1.5fr 90px 1fr auto; gap: 8px; align-items: center; }
+  input, select, button, textarea { font-family: inherit; font-size: 14px; color: var(--text); background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 8px 12px; height: 36px; transition: border-color 0.15s, box-shadow 0.15s; }
+  input:hover, select:hover { border-color: var(--border-strong); }
+  input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(55,138,221,0.18); }
+  button { cursor: pointer; background: var(--surface); white-space: nowrap; }
+  button:hover { background: var(--surface-2); }
+  button:active { transform: scale(0.98); }
+  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+  .tabs { display: flex; gap: 4px; background: var(--surface-2); border-radius: var(--radius); padding: 3px; }
+  .tab-btn { border: none; background: transparent; padding: 6px 14px; font-size: 13px; border-radius: 6px; color: var(--text-muted); height: auto; }
+  .tab-btn:hover { background: transparent; color: var(--text); }
+  .tab-btn.active { background: var(--surface); color: var(--text); font-weight: 500; }
+  #search { flex: 1; min-width: 160px; }
+  .film-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--surface); margin-bottom: 8px; }
+  .film-title { font-weight: 500; font-size: 15px; }
+  .film-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .genre-pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .film-actions { display: flex; gap: 6px; align-items: center; }
+  .btn-danger { color: var(--danger); }
+  .rating { display: flex; gap: 2px; margin-right: 4px; }
+  .star { cursor: pointer; font-size: 16px; color: var(--border-strong); user-select: none; transition: color 0.1s; }
+  .star.on { color: var(--star); }
+  .star:hover { color: var(--star); }
+  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 14px; }
+  .footer-actions { margin-top: 1.5rem; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+  @media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid > button { grid-column: 1 / -1; }
+    h1 { font-size: 22px; }
+  }
+</style>
 </head>
 <body>
-<div id="gameContainer">
-    <canvas id="game"></canvas>
+<div class="container">
+  <h1>🎬 Films cultes</h1>
+  <p class="subtitle">Ta liste à voir et ton inventaire personnel</p>
+  <div class="stats">
+    <div class="stat-card"><div class="stat-label">À voir</div><div class="stat-value" id="stat-todo">0</div></div>
+    <div class="stat-card"><div class="stat-label">Vus</div><div class="stat-value" id="stat-seen">0</div></div>
+    <div class="stat-card"><div class="stat-label">Progression</div><div class="stat-value" id="stat-pct">0%</div></div>
+    <div class="stat-card"><div class="stat-label">Note moyenne</div><div class="stat-value" id="stat-avg">–</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Ajouter un film</div>
+    <div class="form-grid">
+      <input type="text" id="in-title" placeholder="Titre" />
+      <input type="text" id="in-director" placeholder="Réalisateur" />
+      <input type="number" id="in-year" placeholder="Année" min="1900" max="2030" />
+      <select id="in-genre">
+        <option value="Drame">Drame</option><option value="Thriller">Thriller</option>
+        <option value="Sci-Fi">Sci-Fi</option><option value="Comédie">Comédie</option>
+        <option value="Action">Action</option><option value="Animation">Animation</option>
+        <option value="Romance">Romance</option><option value="Aventure">Aventure</option>
+        <option value="Crime">Crime</option><option value="Guerre">Guerre</option>
+        <option value="Western">Western</option><option value="Musical">Musical</option>
+      </select>
+      <button id="btn-add">Ajouter</button>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="todo">À voir</button>
+      <button class="tab-btn" data-tab="seen">Vus</button>
+    </div>
+    <input type="text" id="search" placeholder="Rechercher un titre ou réalisateur..." />
+    <select id="filter-genre" style="width: auto;"><option value="">Tous genres</option></select>
+  </div>
+  <div id="list"></div>
+  <div class="footer-actions">
+    <button id="btn-export">Exporter (JSON)</button>
+    <button id="btn-import">Importer</button>
+    <input type="file" id="file-import" accept="application/json" style="display:none" />
+    <button id="btn-reset" class="btn-danger">Réinitialiser</button>
+  </div>
 </div>
 <script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-
-// Dynamic full-screen sizing
-let W, H, BORDER_W, PLAY_LEFT, PLAY_RIGHT, PLAY_W;
-
-// ==========================================
-// ÉTAPE 2 : CHARGEMENT DES IMAGES (ICI !)
-// ==========================================
-const imgPatapin = new Image();
-imgPatapin.src = "patapim.png";
-
-const imgSahur = new Image();
-imgSahur.src = "sahur.png";
-
-const imgCappuccino = new Image();
-imgCappuccino.src = "cappuccino.png";
-
-const imgBombardino = new Image();
-imgBombardino.src = "bombardino.png";
-// ==========================================
-    
-function resizeCanvas() {
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
-    BORDER_W = Math.max(80, Math.floor(W * 0.35)); // 10% each side, min 80px
-    PLAY_LEFT = BORDER_W;
-    PLAY_RIGHT = W - BORDER_W;
-    PLAY_W = PLAY_RIGHT - PLAY_LEFT;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-// ========== GAME STATE ==========
-let gameState = 'menu'; // menu, playing, gameover, shop, paused
-let player, platforms, score, cameraY;
-let keys = { left: false, right: false };
-let particles = [], floatingTexts = [], gameCoins = [];
-let platformCount = 0, difficulty = 1, gameTime = 0;
-let cloudPositions = [], treePositions = [];
-let touchCurrentX = 0, isTouching = false;
-let menuBob = 0;
-
-// Persistent data (localStorage)
-let highScore = parseInt(localStorage.getItem('brj_highscore') || '0');
-let coins = parseInt(localStorage.getItem('brj_coins') || '0');
-let unlockedChars = JSON.parse(localStorage.getItem('brj_unlocked') || '["patapin"]');
-let selectedChar = localStorage.getItem('brj_selected') || 'patapin';
-let coinsThisRun = 0;
-
-function saveData() {
-    localStorage.setItem('brj_highscore', highScore);
-    localStorage.setItem('brj_coins', coins);
-    localStorage.setItem('brj_unlocked', JSON.stringify(unlockedChars));
-    localStorage.setItem('brj_selected', selectedChar);
-}
-
-// ========== CHARACTERS ==========
-const CHARACTERS = [
-    { id: 'patapin', name: 'Br Br Patapin', price: 0, img: imgPatapin },
-    { id: 'tungtung', name: 'Tung Tung Sahur', price: 150, img: imgSahur },
-    { id: 'cappuccino',   name: 'Cappuccino Assassino',    price: 200, img: imgCappuccino  },
-    { id: 'bombardino',  name: 'Bombardino Crocodillo',      price: 300, img: imgBombardino },
-    { id: 'lirili',    name: 'Lirili Larila',        price: 250, color: '#d060a0', skin: '#f0b0d0', nose: false },
-    { id: 'ambalabu',  name: 'Boneca Ambalabu',      price: 350, color: '#a040d0', skin: '#d0a0f0', nose: false },
+const GENRE_COLORS = {
+  "Drame":["#EEEDFE","#3C3489"],"Thriller":["#F1EFE8","#444441"],"Sci-Fi":["#E6F1FB","#0C447C"],
+  "Comédie":["#FAEEDA","#854F0B"],"Action":["#FAECE7","#712B13"],"Animation":["#E1F5EE","#085041"],
+  "Romance":["#FBEAF0","#72243E"],"Aventure":["#EAF3DE","#27500A"],"Crime":["#F1EFE8","#2C2C2A"],
+  "Guerre":["#F1EFE8","#444441"],"Western":["#FAEEDA","#633806"],"Musical":["#FBEAF0","#993556"]
+};
+const SEED = [
+  {t:"Le Parrain",d:"F. F. Coppola",y:1972,g:"Crime"},
+  {t:"Les Évadés",d:"Frank Darabont",y:1994,g:"Drame"},
+  {t:"Pulp Fiction",d:"Quentin Tarantino",y:1994,g:"Crime"},
+  {t:"La Liste de Schindler",d:"Steven Spielberg",y:1993,g:"Drame"},
+  {t:"Le Seigneur des Anneaux: Le Retour du Roi",d:"Peter Jackson",y:2003,g:"Aventure"},
+  {t:"Forrest Gump",d:"Robert Zemeckis",y:1994,g:"Drame"},
+  {t:"Inception",d:"Christopher Nolan",y:2010,g:"Sci-Fi"},
+  {t:"Fight Club",d:"David Fincher",y:1999,g:"Drame"},
+  {t:"Matrix",d:"Wachowski",y:1999,g:"Sci-Fi"},
+  {t:"Les Affranchis",d:"Martin Scorsese",y:1990,g:"Crime"},
+  {t:"Le Voyage de Chihiro",d:"Hayao Miyazaki",y:2001,g:"Animation"},
+  {t:"Il était une fois dans l'Ouest",d:"Sergio Leone",y:1968,g:"Western"},
+  {t:"Casablanca",d:"Michael Curtiz",y:1942,g:"Romance"},
+  {t:"2001 l'Odyssée de l'espace",d:"Stanley Kubrick",y:1968,g:"Sci-Fi"},
+  {t:"Citizen Kane",d:"Orson Welles",y:1941,g:"Drame"},
+  {t:"Le Fabuleux Destin d'Amélie Poulain",d:"Jean-Pierre Jeunet",y:2001,g:"Romance"},
+  {t:"Les Temps modernes",d:"Charlie Chaplin",y:1936,g:"Comédie"},
+  {t:"Retour vers le futur",d:"Robert Zemeckis",y:1985,g:"Sci-Fi"},
+  {t:"Taxi Driver",d:"Martin Scorsese",y:1976,g:"Drame"},
+  {t:"Apocalypse Now",d:"F. F. Coppola",y:1979,g:"Guerre"},
+  {t:"Blade Runner",d:"Ridley Scott",y:1982,g:"Sci-Fi"},
+  {t:"La vita è bella",d:"Roberto Benigni",y:1997,g:"Drame"},
+  {t:"Les Dents de la mer",d:"Steven Spielberg",y:1975,g:"Aventure"},
+  {t:"Singin' in the Rain",d:"Gene Kelly",y:1952,g:"Musical"},
+  {t:"Parasite",d:"Bong Joon-ho",y:2019,g:"Thriller"},
+  {t:"La La Land",d:"Damien Chazelle",y:2016,g:"Musical"},
+  {t:"Whiplash",d:"Damien Chazelle",y:2014,g:"Drame"},
+  {t:"Les Tontons flingueurs",d:"Georges Lautner",y:1963,g:"Comédie"},
+  {t:"La Grande Évasion",d:"John Sturges",y:1963,g:"Aventure"},
+  {t:"Dr. Folamour",d:"Stanley Kubrick",y:1964,g:"Comédie"},
+  {t:"Le Dictateur",d:"Charlie Chaplin",y:1940,g:"Comédie"},
+  {t:"Le Cercle des poètes disparus",d:"Peter Weir",y:1989,g:"Drame"},
+  {t:"Rain Man",d:"Barry Levinson",y:1988,g:"Drame"},
+  {t:"Gladiator",d:"Ridley Scott",y:2000,g:"Action"},
+  {t:"Le Silence des agneaux",d:"Jonathan Demme",y:1991,g:"Thriller"},
+  {t:"Les Sept Samouraïs",d:"Akira Kurosawa",y:1954,g:"Aventure"}
 ];
-
-let shopScroll = 0;
-let shopTargetScroll = 0;
-
-const PLAT_NORMAL = 0, PLAT_MOVING = 1, PLAT_BREAKING = 2, PLAT_BOOST = 3, PLAT_CRACKED = 4;
-
-let brainrotTexts = [
-    'br br patapin!', 'tung tung sahur!', 'skibidi!',
-    'bombardiro crocodilo!', 'tralalero tralala!',
-    'lirili larila!', 'patafim patafum!', 'brr brr deng!',
-    'boneca ambalabu!', 'sigma!', 'aura +100', 'mewing!', 'rizz!',
-];
-
-// ========== SCENERY ==========
-function initScenery() {
-    cloudPositions = [];
-    for (let i = 0; i < 25; i++) {
-        cloudPositions.push({
-            x: Math.random() * W, baseY: -i * 280 - Math.random() * 150,
-            w: 60 + Math.random() * 80, h: 25 + Math.random() * 15,
-            speed: 0.02 + Math.random() * 0.03, phase: Math.random() * Math.PI * 2
-        });
-    }
-    treePositions = [];
-    for (let i = 0; i < 15; i++) {
-        treePositions.push({
-
-            x: Math.random() > 0.5 ? Math.random() * 100 : W - Math.random() * 100,
-            baseY: H - i * 300 - Math.random() * 200,
-            size: 30 + Math.random() * 40, type: Math.floor(Math.random() * 3)
-        });
-    }
-}
-initScenery();
-
-// Menu clouds (regenerated on resize)
-let menuClouds = [];
-function initMenuClouds() {
-    menuClouds = [];
-    for (let i = 0; i < 15; i++) {
-          menuClouds.push({
-            x: Math.random() * W, y: 40 + Math.random() * (H * 0.5),
-            w: 50 + Math.random() * 90, h: 20 + Math.random() * 15,
-            speed: 0.15 + Math.random() * 0.2
-        });
-    }
-}
-initMenuClouds();
-
-// ========== PLAYER / PLATFORM CREATION ==========
-function createPlayer() {
-    return {
-        x: PLAY_LEFT + PLAY_W / 2 - 28, y: H - 150, w: 56, h: 64,
-        vy: 0, vx: 0, jumpForce: -11, gravity: 0.32, speed: 5,
-        facing: 1, squash: 1, stretch: 1, trail: []
-    };
-}
-function createPlatform(x, y, type) {
-    return {
-        x, y, w: 85, h: 22, type: type || PLAT_NORMAL,
-        moveDir: Math.random() > 0.5 ? 1 : -1, moveSpeed: 1 + Math.random() * 1.5,
-        breaking: false, breakTimer: 0, opacity: 1, bounceAnim: 0,
-        bounced: false
-    };
-}
-function initPlatforms() {
-    platforms = [];
-    platforms.push(createPlatform(PLAY_LEFT + PLAY_W / 2 - 42, H - 50, PLAT_NORMAL));
-    for (let i = 0; i < 18; i++) {
-        platforms.push(createPlatform(PLAY_LEFT + Math.random() * (PLAY_W - 85), H - 100 - i * 42, getRandomType(i)));
-    }
-}
-function getRandomType(h) {
-    let r = Math.random(), d = Math.min(difficulty, 5);
-    if (h < 4) return PLAT_NORMAL;
-    if (r < 0.03 * d) return PLAT_BREAKING;
-    if (r < 0.03 * d + 0.05) return PLAT_CRACKED;
-    if (r < 0.03 * d + 0.09) return PLAT_BOOST;
-    if (r < 0.03 * d + 0.18) return PLAT_MOVING;
-    return PLAT_NORMAL;
-}
-
-function addParticles(x, y, color, count) {
-    for (let i = 0; i < count; i++) particles.push({
-        x, y, vx: (Math.random()-0.5)*6, vy: (Math.random()-0.5)*6-2,
-        life: 1, decay: 0.02+Math.random()*0.03, size: 3+Math.random()*4, c
-
-// ========== START / GAMEOVER ==========
-function startGame() {
-    gameState = 'playing';
-    player = createPlayer();
-    initPlatforms(); initScenery();
-    score = 0; cameraY = 0; particles = []; floatingTexts = []; gameCoins = [];
-    platformCount = 0; difficulty = 1; gameTime = 0; coinsThisRun = 0;
-    player.vy = player.jumpForce;
-}
-function endGame() {
-    gameState = 'gameover';
-    if (score > highScore) highScore = score;
-    coins += coinsThisRun;
-    saveData();
-}
-
-// ========== DRAWING HELPERS ==========
-function roundRect(x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
-    ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r);
-    ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
-    ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r);
-    ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
-}
-function shadeColor(c, p) {
-    let n = parseInt(c.replace('#',''),16);
-    let r = Math.min(255,Math.max(0,(n>>16)+p));
-    let g = Math.min(255,Math.max(0,((n>>8)&0xFF)+p));
-    let b = Math.min(255,Math.max(0,(n&0xFF)+p));
-    return `rgb(${r},${g},${b})`;
-}
-function drawBtn(x, y, w, h, text, fontSize, isHover) {
-    let r = 14;
-    let baseColor = isHover ? '#e8e8e8' : '#f0f0f0';
-    let shadowColor = isHover ? '#888' : '#aaa';
-    let depth = isHover ? 2 : 4;
-    ctx.fillStyle = shadowColor;
-    roundRect(x, y + depth, w, h, r); ctx.fill();
-    let btnGrad = ctx.createLinearGradient(x, y, x, y + h);
-    btnGrad.addColorStop(0, '#fff');
-    btnGrad.addColorStop(1, baseColor);
-    ctx.fillStyle = btnGrad;
-    roundRect(x, y, w, h, r); ctx.fill();
-    ctx.strokeStyle = '#bbb';
-    ctx.lineWidth = 1.5;
-    roundRect(x, y, w, h, r); ctx.stroke();
-    ctx.fillStyle = '#555';
-    ctx.font = `bold ${fontSize}px "Comic Sans MS", sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(text, x + w/2, y + h/2);
-    ctx.textBaseline = 'alphabetic';
-}
-function drawCoinIcon(x, y, size) {
-    ctx.fillStyle = '#ffd700';
-    ctx.strokeStyle = '#c8a000';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#c8a000';
-    ctx.font = `bold ${size * 1.2}px sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('$', x, y + 1);
-    ctx.textBaseline = 'alphabetic';
-}
-
-// ========== DRAW MENU BACKGROUND ==========
-function drawMenuBackground() {
-    menuBob += 0.02;
-    let skyGrad = ctx.createLinearGradient(0, 0, 0, H);
-    skyGrad.addColorStop(0, '#4a9ee0');
-    skyGrad.addColorStop(0.5, '#7ac0f0');
-    skyGrad.addColorStop(1, '#b0daf8');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, W, H);
-    menuClouds.forEach(c => {
-        c.x += c.speed;
-        if (c.x > W + c.w) c.x = -c.w;
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.beginPath(); ctx.ellipse(c.x, c.y, c.w*0.5, c.h*0.6, 0, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(c.x - c.w*0.28, c.y+3, c.w*0.32, c.h*0.48, 0, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(c.x + c.w*0.3, c.y+2, c.w*0.35, c.h*0.5, 0, 0, Math.PI*2); ctx.fill();
+const STORAGE_KEY = "films-cultes-v1";
+let films = [], currentTab = "todo";
+function load(){try{const r=localStorage.getItem(STORAGE_KEY);if(r){films=JSON.parse(r);return;}}catch(e){}films=SEED.map((f,i)=>({id:"s"+i,title:f.t,director:f.d,year:f.y,genre:f.g,seen:false,rating:0}));save();}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(films));}catch(e){}}
+const $=(id)=>document.getElementById(id);
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function render(){
+  const todo=films.filter(f=>!f.seen),seen=films.filter(f=>f.seen);
+  $("stat-todo").textContent=todo.length;$("stat-seen").textContent=seen.length;
+  $("stat-pct").textContent=films.length?Math.round(seen.length/films.length*100)+"%":"0%";
+  const rated=seen.filter(f=>f.rating>0);
+  $("stat-avg").textContent=rated.length?(rated.reduce((s,f)=>s+f.rating,0)/rated.length).toFixed(1)+"/5":"–";
+  const genres=[...new Set(films.map(f=>f.genre))].sort();
+  const gf=$("filter-genre"),cur=gf.value;
+  gf.innerHTML='<option value="">Tous genres</option>'+genres.map(g=>`<option value="${g}">${g}</option>`).join("");
+  gf.value=cur;
+  const search=$("search").value.toLowerCase(),genreFilter=gf.value;
+  let list=currentTab==="todo"?todo:seen;
+  if(search)list=list.filter(f=>f.title.toLowerCase().includes(search)||f.director.toLowerCase().includes(search));
+  if(genreFilter)list=list.filter(f=>f.genre===genreFilter);
+  const container=$("list");
+  if(!list.length){container.innerHTML=`<div class="empty">${currentTab==="todo"?"Aucun film à voir. Ajoute-en un !":"Aucun film vu pour l'instant."}</div>`;return;}
+  container.innerHTML=list.map(f=>{
+    const[bg,fg]=GENRE_COLORS[f.genre]||["#F1EFE8","#444441"];
+    const pill=`<span class="genre-pill" style="background:${bg};color:${fg};">${f.genre}</span>`;
+    const rating=f.seen?`<div class="rating" data-id="${f.id}">${[1,2,3,4,5].map(n=>`<span class="star ${n<=f.rating?'on':''}" data-n="${n}">★</span>`).join("")}</div>`:"";
+    const toggleLabel=f.seen?"↶ À revoir":"✓ Vu";
+    return `<div class="film-row"><div><div class="film-title">${escapeHtml(f.title)} ${pill}</div><div class="film-meta">${escapeHtml(f.director)} · ${f.year}</div></div><div class="film-actions">${rating}<button data-act="toggle" data-id="${f.id}">${toggleLabel}</button><button data-act="del" data-id="${f.id}" class="btn-danger">✕</button></div></div>`;
+  }).join("");
+  container.querySelectorAll("button[data-act]").forEach(b=>{
+    b.addEventListener("click",()=>{
+      const id=b.dataset.id;
+      if(b.dataset.act==="toggle"){const f=films.find(x=>x.id===id);f.seen=!f.seen;if(!f.seen)f.rating=0;}
+      else if(b.dataset.act==="del"){films=films.filter(x=>x.id!==id);}
+      save();render();
     });
-    drawMenuForest(H * 0.62, 'rgba(55,120,45,0.35)', 35, 0.7);
-    drawMenuForest(H * 0.72, 'rgba(40,95,30,0.45)', 45, 0.5);
-    drawMenuForest(H * 0.80, 'rgba(30,78,22,0.6)', 55, 0.3);
-    let groundGrad = ctx.createLinearGradient(0, H * 0.88, 0, H);
-    groundGrad.addColorStop(0, '#3a8a25');
-    groundGrad.addColorStop(0.15, '#2d7a1c');
-    groundGrad.addColorStop(1, '#5a3a20');
-    ctx.fillStyle = groundGrad;
-    ctx.fillRect(0, H * 0.88, W, H * 0.12);
-    ctx.fillStyle = '#4aaa30';
-    for (let x = 0; x < W; x += 18) {
-        ctx.beginPath();
-        ctx.moveTo(x - 5, H * 0.88 + 2);
-        ctx.quadraticCurveTo(x, H * 0.88 - 6 - Math.sin(x * 0.1 + menuBob) * 2, x + 5, H * 0.88 + 2);
-        ctx.fill();
-    }
-}
-function drawMenuForest(baseY, color, treeH, drift) {
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.moveTo(0, H);
-    for (let x = 0; x <= W; x += 15) {
-        ctx.lineTo(x, baseY + Math.sin(x * 0.015 + menuBob * drift) * 12);
-    }
-    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
-    let treeColor = color.replace(/[\d.]+\)$/, m => (parseFloat(m) + 0.15).toFixed(2) + ')');
-    ctx.fillStyle = treeColor;
-    for (let x = 8; x < W; x += 30 + Math.sin(x) * 8) {
-        let y = baseY + Math.sin(x * 0.015 + menuBob * drift) * 12;
-        ctx.beginPath();
-        ctx.moveTo(x, y); ctx.lineTo(x - 7, y); ctx.lineTo(x, y - treeH * (0.5 + Math.sin(x * 0.08) * 0.2)); ctx.lineTo(x + 7, y);
-        ctx.closePath(); ctx.fill();
-    }
-}
-
-function drawTitle(y) {
-    let lines = ['BRAINROT', 'JUMP'];
-    let sizes = [62, 72];
-    lines.forEach((line, li) => {
-        let fontSize = sizes[li];
-        let ly = y + li * 72;
-        ctx.font = `bold ${fontSize}px "Comic Sans MS", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(255,255,255,0.9)';
-        ctx.shadowBlur = 25;
-        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-        ctx.lineWidth = 18; ctx.lineJoin = 'round';
-        ctx.strokeText(line, W/2, ly);
-        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-        ctx.lineWidth = 10;
-        ctx.strokeText(line, W/2, ly);
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(0,0,0,0.1)';
-        ctx.fillText(line, W/2 + 3, ly + 3);
-        ctx.fillStyle = '#fff';
-        ctx.fillText(line, W/2, ly);
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, ly - fontSize, W, fontSize * 0.5);
-        ctx.clip();
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.fillText(line, W/2, ly);
-        ctx.restore();
+  });
+  container.querySelectorAll(".rating").forEach(r=>{
+    r.querySelectorAll(".star").forEach(s=>{
+      s.addEventListener("click",()=>{
+        const f=films.find(x=>x.id===r.dataset.id);
+        const n=parseInt(s.dataset.n);
+        f.rating=f.rating===n?0:n;
+        save();render();
+      });
     });
+  });
 }
-
-function drawCharAt(cx, cy, scale, charId, anim) {
-
-    let ch = CHARACTERS.find(c => c.id === charId) || CHARACTERS[0];
-
-    if (ch.img) {
-
-        ctx.save();
-
-        ctx.translate(cx, cy);
-
-        ctx.scale(scale, Math.abs(scale)); 
-
-        let bob = Math.sin((anim || menuBob * 3) * 0.8) * 5;
-
-        ctx.drawImage(ch.img, -60, -60 + bob, 120, 120);
-
-        ctx.restore();
-
-    }
-
-}
-
-
-
-function drawPlayer() {
-
-    if (!player) return;
-
-    let px = player.x, py = player.y - cameraY;
-
-    player.trail.forEach(tr => {
-
-        ctx.globalAlpha = tr.life * 0.2;
-
-        ctx.fillStyle = '#7cb342';
-
-        ctx.beginPath(); ctx.ellipse(tr.x + player.w/2, tr.y - cameraY + player.h/2, 5, 3, tr.life*4, 0, Math.PI*2); ctx.fill();
-
-        tr.life -= 0.04;
-
-    });
-
-    player.trail = player.trail.filter(tr => tr.life > 0);
-
-    ctx.globalAlpha = 1;
-
-    player.squash += (1 - player.squash) * 0.15;
-
-    player.stretch += (1 - player.stretch) * 0.15;
-
-    let scale = player.facing;
-
-    drawCharAt(px + player.w/2, py + player.h/2, scale, selectedChar, gameTime * 0.06);
-
-}
-
-
-
-function drawPlatform(p) {
-
-    let py = p.y - cameraY;
-
-    if (py > H + 25 || py < -25) return;
-
-    ctx.globalAlpha = p.opacity;
-
-    let pw = p.w, ph = p.h;
-
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-
-    roundRect(p.x+2, py+3, pw, ph, 5); ctx.fill();
-
-    let dirt = '#8B5E3C', grass = '#5aaa30', outline = '#4a2a10';
-
-    if (p.type===PLAT_MOVING) { dirt='#6a7a8a'; grass='#40a0b0'; outline='#3a4a5a'; }
-
-    else if (p.type===PLAT_BREAKING) { dirt='#9a5050'; grass='#c06060'; outline='#5a2020'; }
-
-    else if (p.type===PLAT_BOOST) { dirt='#8a7030'; grass='#e0c030'; outline='#5a4a10'; }
-
-    else if (p.type===PLAT_CRACKED) { dirt='#7a6040'; grass='#8a9050'; outline='#4a3020'; }
-
-    let dg = ctx.createLinearGradient(p.x, py+6, p.x, py+ph);
-
-    dg.addColorStop(0, dirt); dg.addColorStop(1, shadeColor(dirt, -25));
-
-    ctx.fillStyle = dg;
-
-    roundRect(p.x, py+5-p.bounceAnim, pw, ph-5, 4); ctx.fill();
-
-    let gg = ctx.createLinearGradient(p.x, py-p.bounceAnim, p.x, py+8-p.bounceAnim);
-
-    gg.addColorStop(0, shadeColor(grass, 20)); gg.addColorStop(1, grass);
-
-    ctx.fillStyle = gg;
-
-    roundRect(p.x, py-p.bounceAnim, pw, 10, 5); ctx.fill();
-
-    ctx.fillStyle = shadeColor(grass, 30);
-
-    for (let g = 0; g < 6; g++) {
-
-        let gx = p.x + 8 + g * (pw-16)/5, gy = py - 2 - p.bounceAnim;
-
-        ctx.beginPath(); ctx.moveTo(gx-3,gy+3); ctx.quadraticCurveTo(gx,gy-2,gx+3,gy+3); ctx.fill();
-
-    }
-
-    ctx.strokeStyle = outline; ctx.lineWidth = 1.8;
-
-    roundRect(p.x, py-p.bounceAnim, pw, ph, 5); ctx.stroke();
-
-    if (p.type === PLAT_BOOST) { ctx.font='bold 16px sans-serif'; ctx.textAlign='center'; ctx.fillText('🍄', p.x+pw/2, py-4-p.bounceAnim); }
-
-    if (p.type === PLAT_MOVING) { ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='11px sans-serif'; ctx.textAlign='center'; ctx.fillText(p.moveDir>0?'>>>':'<<<', p.x+pw/2, py+15-p.bounceAnim); }
-
-    if (p.type === PLAT_CRACKED) {
-
-        ctx.strokeStyle = 'rgba(50,30,10,0.4)'; ctx.lineWidth = 1;
-
-        ctx.beginPath(); ctx.moveTo(p.x+20,py-p.bounceAnim+3); ctx.lineTo(p.x+26,py-p.bounceAnim+ph/2+2); ctx.lineTo(p.x+22,py-p.bounceAnim+ph-3); ctx.stroke();
-
-        ctx.beginPath(); ctx.moveTo(p.x+55,py-p.bounceAnim+2); ctx.lineTo(p.x+50,py-p.bounceAnim+ph-2); ctx.stroke();
-
-        if (p.bounced) {
-
-            ctx.strokeStyle='rgba(80,40,10,0.7)'; ctx.lineWidth=2;
-
-            ctx.beginPath(); ctx.moveTo(p.x+10,py-p.bounceAnim); ctx.lineTo(p.x+20,py-p.bounceAnim+ph/2); ctx.lineTo(p.x+14,py-p.bounceAnim+ph); ctx.stroke();
-
-            ctx.beginPath(); ctx.moveTo(p.x+40,py-p.bounceAnim); ctx.lineTo(p.x+34,py-p.bounceAnim+ph*.7); ctx.lineTo(p.x+42,py-p.bounceAnim+ph); ctx.stroke();
-
-            ctx.fillStyle=`rgba(255,80,30,${0.08+Math.sin(gameTime*0.3)*0.06})`;
-
-            roundRect(p.x,py-p.bounceAnim,pw,ph,5); ctx.fill();
-
-        }
-
-    }
-
-    if (p.type===PLAT_BREAKING && p.breaking) {
-
-        ctx.strokeStyle='#fff'; ctx.lineWidth=1.5;
-
-        ctx.beginPath(); ctx.moveTo(p.x+15,py); ctx.lineTo(p.x+28,py+ph/2); ctx.lineTo(p.x+20,py+ph); ctx.stroke();
-
-        ctx.beginPath(); ctx.moveTo(p.x+50,py); ctx.lineTo(p.x+44,py+ph); ctx.stroke();
-
-    }
-
-    p.bounceAnim *= 0.85;
-
-    ctx.globalAlpha = 1;
-
-}
-
-
-
-function drawGameBackground() {
-
-    let skyGrad = ctx.createLinearGradient(0,0,0,H);
-
-    let sh = Math.min(score*0.05, 30);
-
-    skyGrad.addColorStop(0, `hsl(${210-sh*0.3},75%,${58+sh*0.2}%)`);
-
-    skyGrad.addColorStop(0.6, `hsl(${200-sh*0.2},70%,${72+sh*0.1}%)`);
-
-    skyGrad.addColorStop(1, 'hsl(195,65%,82%)');
-
-    ctx.fillStyle = skyGrad; ctx.fillRect(0,0,W,H);
-
-    cloudPositions.forEach(c => {
-
-        let cy = ((c.baseY - cameraY*0.15)%(H+300)+H+300)%(H+300)-150;
-
-        let cx = c.x + Math.sin(gameTime*c.speed+c.phase)*10;
-
-        ctx.fillStyle = 'rgba(255,255,255,0.55)';
-
-        ctx.beginPath(); ctx.ellipse(cx,cy,c.w*0.5,c.h*0.6,0,0,Math.PI*2); ctx.fill();
-
-        ctx.beginPath(); ctx.ellipse(cx-c.w*0.3,cy+4,c.w*0.35,c.h*0.5,0,0,Math.PI*2); ctx.fill();
-
-        ctx.beginPath(); ctx.ellipse(cx+c.w*0.3,cy+3,c.w*0.38,c.h*0.52,0,0,Math.PI*2); ctx.fill();
-
-    });
-
-    drawGameForest(0.08, H*0.7, 'rgba(60,110,50,0.3)', 40);
-
-    drawGameForest(0.06, H*0.78, 'rgba(45,90,35,0.35)', 50);
-
-    drawGameForest(0.04, H*0.85, 'rgba(35,75,25,0.4)', 60);
-
-}
-
-function drawGameForest(scrollSpeed, baseY, color, treeH) {
-
-    let y = baseY + ((cameraY * scrollSpeed) % 50);
-
-    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0,H);
-
-    for (let x = 0; x <= W; x += 20) ctx.lineTo(x, y + Math.sin(x*0.02+cameraY*scrollSpeed*0.5)*15);
-
-    ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
-
-}
-
-
-
-function drawHUD() {
-
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-    roundRect(12,12,170,42,12); ctx.fill();
-
-    ctx.fillStyle = '#3a3a3a'; ctx.font = 'bold 24px "Comic Sans MS", sans-serif'; ctx.textAlign = 'left';
-
-    ctx.fillText(`Score: ${score}`, 24, 40);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-    roundRect(W-130,12,118,34,10); ctx.fill();
-
-    drawCoinIcon(W-115, 29, 10);
-
-    ctx.fillStyle = '#555'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'left';
-
-    ctx.fillText(`${coins + coinsThisRun}`, W-100, 34);
-
-    ctx.fillStyle = isHover(W/2-20, 8, 40, 40) ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.65)';
-
-    ctx.beginPath(); ctx.arc(W/2, 28, 20, 0, Math.PI*2); ctx.fill();
-
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1.5;
-
-    ctx.beginPath(); ctx.arc(W/2, 28, 20, 0, Math.PI*2); ctx.stroke();
-
-    ctx.fillStyle = '#666';
-
-    ctx.fillRect(W/2-6, 18, 4.5, 20);
-
-    ctx.fillRect(W/2+1.5, 18, 4.5, 20);
-
-}
-
-
-
-function drawPaused() {
-
-    drawGameBackground();
-
-    platforms.forEach(p => drawPlatform(p));
-
-    drawPlayer();
-
-    drawHUD();
-
-    ctx.fillStyle = 'rgba(0,0,0,0.45)';
-
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-
-    roundRect(W/2-150, H/2-130, 300, 260, 20); ctx.fill();
-
-    ctx.fillStyle = '#444'; ctx.font = 'bold 36px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
-
-    ctx.fillText('PAUSE', W/2, H/2 - 80);
-
-    ctx.fillStyle = '#777'; ctx.font = 'bold 18px "Comic Sans MS", sans-serif';
-
-    ctx.fillText(`Score: ${score}`, W/2, H/2 - 45);
-
-    drawBtn(W/2-100, H/2-20, 200, 50, '▶  Reprendre', 20, isHover(W/2-100, H/2-20, 200, 50));
-
-    drawBtn(W/2-100, H/2+45, 200, 45, '🏠  Menu', 18, isHover(W/2-100, H/2+45, 200, 45));
-
-}
-
-
-
-function drawMenu() {
-
-    drawMenuBackground();
-
-    drawTitle(80);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-    roundRect(W/2 - 130, 185, 260, 60, 16); ctx.fill();
-
-    ctx.fillStyle = '#666'; ctx.font = 'bold 16px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
-
-    ctx.fillText('MEILLEUR SCORE', W/2, 207);
-
-    ctx.fillStyle = '#333'; ctx.font = 'bold 34px "Comic Sans MS", sans-serif';
-
-    ctx.fillText(highScore, W/2, 240);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-
-    roundRect(W - 145, 18, 126, 40, 12); ctx.fill();
-
-    drawCoinIcon(W - 128, 38, 11);
-
-    ctx.fillStyle = '#444'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left';
-
-    ctx.fillText(coins, W - 112, 44);
-
-    drawCharAt(W/2, 370, 1.8, selectedChar, menuBob * 3);
-
-    let charName = (CHARACTERS.find(c => c.id === selectedChar) || CHARACTERS[0]).name;
-
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-    roundRect(W/2 - 105, 455, 210, 30, 10); ctx.fill();
-
-    ctx.fillStyle = '#555'; ctx.font = 'bold 15px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
-
-    ctx.fillText(charName, W/2, 475);
-
-    drawBtn(W/2 - 100, 505, 200, 58, '▶  JOUER', 28, isHover(W/2-100, 505, 200, 58));
-
-    drawBtn(W/2 - 100, 580, 200, 48, '🛒  Boutique', 20, isHover(W/2-100, 580, 200, 48));
-
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-
-    ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-
-    ctx.fillText('Fleches / WASD / Souris / Touch', W/2, H - 25);
-
-}
-
-
-
-function drawGameOver() {
-
-    drawMenuBackground();
-
-    ctx.font = 'bold 52px "Comic Sans MS", sans-serif';
-
-    ctx.textAlign = 'center';
-
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 5;
-
-    ctx.strokeText('YOU FELL!', W/2, 120);
-
-    ctx.fillStyle = '#ff5555';
-
-    ctx.fillText('YOU FELL!', W/2, 120);
-
-    drawCharAt(W/2, 260, 1.5, selectedChar, menuBob * 3);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
-
-    roundRect(W/2 - 140, 350, 280, 130, 16); ctx.fill();
-
-    ctx.fillStyle = '#444'; ctx.font = 'bold 18px "Comic Sans MS", sans-serif';
-
-    ctx.fillText('Score', W/2, 380);
-
-    ctx.fillStyle = '#222'; ctx.font = 'bold 40px "Comic Sans MS", sans-serif';
-
-    ctx.fillText(score, W/2, 420);
-
-    ctx.fillStyle = '#888'; ctx.font = 'bold 15px sans-serif';
-
-    ctx.fillText(`Meilleur: ${highScore}`, W/2, 450);
-
-    drawCoinIcon(W/2 - 35, 470, 10);
-
-    ctx.textAlign = 'left';
-
-    ctx.fillText(`+${coinsThisRun}`, W/2 - 20, 475);
-
-    ctx.textAlign = 'center';
-
-    drawBtn(W/2 - 90, 510, 180, 50, 'REJOUER', 22, isHover(W/2-90, 510, 180, 50));
-
-    drawBtn(W/2 - 90, 575, 180, 45, '🏠  Menu', 18, isHover(W/2-90, 575, 180, 45));
-
-}
-
-
-
-function drawShop() {
-
-    drawMenuBackground();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-    roundRect(20, 15, W - 40, 55, 14); ctx.fill();
-
-    ctx.fillStyle = '#444'; ctx.font = 'bold 28px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
-
-    ctx.fillText('BOUTIQUE', W/2, 50);
-
-    drawCoinIcon(W - 100, 42, 12);
-
-    ctx.fillStyle = '#444'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left';
-
-    ctx.fillText(coins, W - 82, 48);
-
-    drawBtn(22, 22, 80, 40, '< Retour', 13, isHover(22, 22, 80, 40));
-
-    let cardW = 190, cardH = 240, gap = 20;
-
-    let cols = 3;
-
-    let startX = (W - cols * cardW - (cols-1) * gap) / 2;
-
-    let startY = 90;
-
-    CHARACTERS.forEach((ch, i) => {
-
-        let col = i % cols, row = Math.floor(i / cols);
-
-        let cx = startX + col * (cardW + gap);
-
-        let cy = startY + row * (cardH + gap);
-
-        let owned = unlockedChars.includes(ch.id);
-
-        let isSelected = selectedChar === ch.id;
-
-        ctx.fillStyle = isSelected ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)';
-
-        roundRect(cx, cy, cardW, cardH, 12); ctx.fill();
-
-        if (isSelected) {
-
-            ctx.strokeStyle = '#4a9ee0'; ctx.lineWidth = 3;
-
-            roundRect(cx, cy, cardW, cardH, 12); ctx.stroke();
-
-        }
-
-        if (!owned) ctx.globalAlpha = 0.4;
-
-        drawCharAt(cx + cardW/2, cy + 100, 1.1, ch.id, menuBob * 3 + i);
-
-        ctx.globalAlpha = 1;
-
-        ctx.fillStyle = '#444'; ctx.font = 'bold 13px "Comic Sans MS", sans-serif'; ctx.textAlign = 'center';
-
-        ctx.fillText(ch.name, cx + cardW/2, cy + 170);
-
-        if (owned && isSelected) {
-
-            ctx.fillStyle = '#4a9ee0';
-
-            roundRect(cx + 20, cy + 190, cardW - 40, 35, 10); ctx.fill();
-
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-            ctx.fillText('EQUIPE', cx + cardW/2, cy + 207);
-
-            ctx.textBaseline = 'alphabetic';
-
-        } else if (owned) {
-
-            drawBtn(cx + 20, cy + 190, cardW - 40, 35, 'Choisir', 14, isHover(cx+20, cy+190, cardW-40, 35));
-
-        } else {
-
-            let canBuy = coins >= ch.price;
-
-            ctx.fillStyle = canBuy ? '#4aaa30' : '#aaa';
-
-            roundRect(cx + 20, cy + 190, cardW - 40, 35, 10); ctx.fill();
-
-            drawCoinIcon(cx + 55, cy + 207, 8);
-
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-            ctx.fillText(ch.price, cx + 75, cy + 207);
-
-            ctx.textBaseline = 'alphabetic';
-
-        }
-
-        if (!owned) {
-
-            ctx.fillStyle = 'rgba(0,0,0,0.15)';
-
-            roundRect(cx, cy, cardW, cardH, 12); ctx.fill();
-
-            ctx.font = '30px sans-serif'; ctx.textAlign = 'center';
-
-            ctx.fillText('🔒', cx + cardW/2, cy + 110);
-
-        }
-
-    });
-
-}
-
-
-
-let mouseX = 0, mouseY = 0;
-
-canvas.addEventListener('mousemove', e => {
-
-    let rect = canvas.getBoundingClientRect();
-
-    let scaleX = W / rect.width, scaleY = H / rect.height;
-
-    mouseX = (e.clientX - rect.left) * scaleX;
-
-    mouseY = (e.clientY - rect.top) * scaleY;
-
-    if (gameState === 'playing') {
-
-        if (mouseX < W * 0.4) { keys.left = true; keys.right = false; }
-
-        else if (mouseX > W * 0.6) { keys.right = true; keys.left = false; }
-
-        else { keys.left = false; keys.right = false; }
-
-    }
-
+document.querySelectorAll(".tab-btn").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");currentTab=b.dataset.tab;render();
+  });
 });
-
-
-
-function isHover(x, y, w, h) {
-
-    return mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h;
-
-}
-
-
-
-canvas.addEventListener('click', e => {
-
-    let rect = canvas.getBoundingClientRect();
-
-    let scaleX = W / rect.width, scaleY = H / rect.height;
-
-    let cx = (e.clientX - rect.left) * scaleX;
-
-    let cy = (e.clientY - rect.top) * scaleY;
-
-    if (gameState === 'playing') {
-
-        let dx = cx - W/2, dy = cy - 28;
-
-        if (dx*dx + dy*dy < 25*25) { gameState = 'paused'; keys.left = false; keys.right = false; return; }
-
-    } else if (gameState === 'paused') {
-
-        if (cx > W/2-100 && cx < W/2+100 && cy > H/2-20 && cy < H/2+30) { gameState = 'playing'; return; }
-
-        if (cx > W/2-100 && cx < W/2+100 && cy > H/2+45 && cy < H/2+90) { gameState = 'menu'; return; }
-
-    } else if (gameState === 'menu') {
-
-        if (cx > W/2-100 && cx < W/2+100 && cy > 505 && cy < 563) startGame();
-
-        if (cx > W/2-100 && cx < W/2+100 && cy > 580 && cy < 628) gameState = 'shop';
-
-    } else if (gameState === 'gameover') {
-
-        if (cx > W/2-90 && cx < W/2+90 && cy > 510 && cy < 560) startGame();
-
-        if (cx > W/2-90 && cx < W/2+90 && cy > 575 && cy < 620) gameState = 'menu';
-
-    } else if (gameState === 'shop') {
-
-        if (cx > 22 && cx < 102 && cy > 22 && cy < 62) { gameState = 'menu'; return; }
-
-        let cardW = 190, cardH = 240, gap = 20, cols = 3;
-
-        let startX = (W - cols*cardW - (cols-1)*gap) / 2;
-
-        let startY = 90;
-
-        CHARACTERS.forEach((ch, i) => {
-
-            let col = i % cols, row = Math.floor(i / cols);
-
-            let bx = startX + col*(cardW+gap) + 20;
-
-            let by = startY + row*(cardH+gap) + 190;
-
-            if (cx > bx && cx < bx+cardW-40 && cy > by && cy < by+35) {
-
-                let owned = unlockedChars.includes(ch.id);
-
-                if (owned) { selectedChar = ch.id; saveData(); }
-
-                else if (coins >= ch.price) {
-
-                    coins -= ch.price; unlockedChars.push(ch.id); selectedChar = ch.id; saveData();
-
-                }
-
-            }
-
-        });
-
-    }
-
+$("btn-add").addEventListener("click",()=>{
+  const title=$("in-title").value.trim(),director=$("in-director").value.trim();
+  const year=parseInt($("in-year").value),genre=$("in-genre").value;
+  if(!title){$("in-title").focus();return;}
+  films.unshift({id:"u"+Date.now(),title,director:director||"–",year:year||"–",genre,seen:false,rating:0});
+  $("in-title").value="";$("in-director").value="";$("in-year").value="";
+  save();render();
 });
-
-
-
-document.addEventListener('keydown', e => {
-
-    if (e.key === 'Escape') {
-
-        if (gameState === 'playing') { gameState = 'paused'; keys.left = false; keys.right = false; }
-
-        else if (gameState === 'paused') { gameState = 'playing'; }
-
-    }
-
-    if (gameState !== 'playing') return;
-
-    if (e.key==='ArrowLeft'||e.key==='a'||e.key==='q') keys.left=true;
-
-    if (e.key==='ArrowRight'||e.key==='d') keys.right=true;
-
+["in-title","in-director","in-year"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")$("btn-add").click();}));
+$("search").addEventListener("input",render);
+$("filter-genre").addEventListener("change",render);
+$("btn-export").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(films,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="films-cultes-"+new Date().toISOString().slice(0,10)+".json";a.click();
+  URL.revokeObjectURL(url);
 });
-
-document.addEventListener('keyup', e => {
-
-    if (e.key==='ArrowLeft'||e.key==='a'||e.key==='q') keys.left=false;
-
-    if (e.key==='ArrowRight'||e.key==='d') keys.right=false;
-
+$("btn-import").addEventListener("click",()=>$("file-import").click());
+$("file-import").addEventListener("change",e=>{
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{try{const d=JSON.parse(reader.result);if(Array.isArray(d)){films=d;save();render();}}catch(err){alert("Fichier invalide");}};
+  reader.readAsText(file);
 });
-
-
-
-function update() {
-
-    if (gameState !== 'playing') return;
-
-    gameTime++;
-
-    if (keys.left) { player.vx = -player.speed; player.facing = -1; }
-
-    else if (keys.right) { player.vx = player.speed; player.facing = 1; }
-
-    else { player.vx *= 0.85; }
-
-    player.x += player.vx;
-
-    player.vy += player.gravity;
-
-    player.y += player.vy;
-
-    if (player.x > PLAY_RIGHT) player.x = PLAY_LEFT - player.w;
-
-    if (player.x + player.w < PLAY_LEFT) player.x = PLAY_RIGHT;
-
-    if (Math.abs(player.vy) > 2) player.trail.push({ x: player.x, y: player.y, life: 1 });
-
-    let targetCam = player.y - H * 0.4;
-
-    if (targetCam < cameraY) cameraY += (targetCam - cameraY) * 0.1;
-
-    let newScore = Math.floor(-cameraY / 10);
-
-    if (newScore > score) {
-
-        if (score <= highScore && newScore > highScore && highScore > 0) {
-
-            addFloatingText(W/2, 100);
-
-            addParticles(W/2, H/2, '#ffd700', 20);
-
-        }
-
-        score = newScore;
-
-        difficulty = 1 + Math.floor(score / 500);
-
-    }
-
-    if (player.vy > 0) {
-
-        platforms.forEach(p => {
-
-            if (p.breaking && p.breakTimer > 10) return;
-
-            let on = player.x+player.w > p.x && player.x < p.x+p.w &&
-
-                     player.y+player.h > p.y && player.y+player.h < p.y+p.h+player.vy+2;
-
-            if (on) {
-
-                if (p.type === PLAT_BREAKING) { p.breaking = true; addParticles(p.x+p.w/2, p.y, '#9a5050', 10); return; }
-
-                if (p.type === PLAT_CRACKED) {
-
-                    if (p.bounced) { p.breaking = true; addParticles(p.x+p.w/2, p.y, '#7a6040', 14); return; }
-
-                    else { p.bounced = true; }
-
-                }
-
-                player.vy = p.type===PLAT_BOOST ? player.jumpForce*1.8 : player.jumpForce;
-
-                player.squash = 1.3; player.stretch = 0.7;
-
-                p.bounceAnim = 5;
-
-            }
-
-        });
-
-    }
-
-    gameCoins.forEach(gc => {
-
-        if (gc.collected) return;
-
-        let dx = (player.x + player.w/2) - gc.x;
-
-        let dy = (player.y + player.h/2) - gc.y;
-
-        if (dx*dx + dy*dy < 55*55) {
-
-            gc.collected = true; gc.collectAnim = 1;
-
-            coinsThisRun++; addParticles(gc.x, gc.y, '#ffd700', 8);
-
-        }
-
-    });
-
-    platforms.forEach(p => {
-
-        if (p.type===PLAT_MOVING) { p.x += p.moveSpeed*p.moveDir; if (p.x<=PLAY_LEFT||p.x+p.w>=PLAY_RIGHT) p.moveDir*=-1; }
-
-        if (p.breaking) { p.breakTimer++; p.opacity=Math.max(0,1-p.breakTimer/15); p.y+=p.breakTimer*0.5; }
-
-    });
-
-    let hp = Math.min(...platforms.map(p => p.y));
-
-    while (hp > cameraY - 100) {
-
-        let gap = 38 + Math.random() * 28 + Math.min(difficulty * 4, 35);
-
-        let ny = hp - gap;
-
-        let numOnLine = Math.random() < 0.1 ? 2 : 1; 
-
-        let linePlatforms = [];
-
-        for (let j = 0; j < numOnLine; j++) {
-
-            let nx = PLAY_LEFT + Math.random() * (PLAY_W - 85);
-
-            let type = getRandomType(100);
-
-            linePlatforms.push({x: nx, y: ny, type: type});
-
-        }
-
-        let allFragile = linePlatforms.every(p => p.type === PLAT_BREAKING || p.type === PLAT_CRACKED);
-
-        if (allFragile) { linePlatforms[0].type = PLAT_NORMAL; }
-
-        linePlatforms.forEach(p => {
-
-            platforms.push(createPlatform(p.x, p.y, p.type));
-
-            if (Math.random() < 0.3) {
-
-                gameCoins.push({ x: p.x + 20 + Math.random() * 45, y: p.y - 30 - Math.random() * 25, collected: false, collectAnim: 0 });
-
-            }
-
-        });
-
-        hp = ny;
-
-    }
-
-    platforms = platforms.filter(p => p.y-cameraY < H+50 && p.opacity > 0);
-
-    gameCoins.forEach(gc => { if (gc.collected) gc.collectAnim -= 0.05; });
-
-    gameCoins = gameCoins.filter(gc => gc.y - cameraY < H + 50 && (!gc.collected || gc.collectAnim > 0));
-
-    particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.1; p.life-=p.decay; });
-
-    particles = particles.filter(p => p.life > 0);
-
-    floatingTexts.forEach(f => { f.y+=f.vy; f.life-=0.015; });
-
-    floatingTexts = floatingTexts.filter(f => f.life > 0);
-
-    if (player.y - cameraY > H + 50) endGame();
-
-}
-
-
-
-function draw() {
-
-    if (gameState === 'menu') { drawMenu(); return; }
-
-    if (gameState === 'shop') { drawShop(); return; }
-
-    if (gameState === 'gameover') { drawGameOver(); return; }
-
-    if (gameState === 'paused') { drawPaused(); return; }
-
-
-
-    drawGameBackground();
-
-    platforms.forEach(p => drawPlatform(p));
-
-
-
-    if (highScore > 0) {
-
-        let hsY = (-highScore * 10) - cameraY;
-
-        if (hsY > -50 && hsY < H + 50) {
-
-            ctx.save();
-
-            ctx.setLineDash([10, 10]);
-
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-
-            ctx.lineWidth = 3;
-
-            ctx.beginPath();
-
-            ctx.moveTo(PLAY_LEFT, hsY);
-
-            ctx.lineTo(PLAY_RIGHT, hsY);
-
-            ctx.stroke();
-
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-
-            ctx.font = 'bold 16px "Comic Sans MS", sans-serif';
-
-            ctx.textAlign = 'right';
-
-            ctx.fillText('MEILLEUR SCORE  🏁', PLAY_RIGHT - 10, hsY - 10);
-
-            ctx.restore();
-
-        }
-
-    }
-
-
-
-    gameCoins.forEach(gc => {
-
-        let cy = gc.y - cameraY;
-
-        if (cy < -20 || cy > H + 20) return;
-
-        if (gc.collected) { ctx.globalAlpha = gc.collectAnim; cy -= (1 - gc.collectAnim) * 30; }
-
-        let bobY = Math.sin(gameTime * 0.08 + gc.x * 0.1) * 3;
-
-        ctx.fillStyle = 'rgba(255,215,0,0.2)';
-
-        ctx.beginPath(); ctx.arc(gc.x, cy + bobY, 16, 0, Math.PI * 2); ctx.fill();
-
-        ctx.fillStyle = '#ffd700'; ctx.strokeStyle = '#c8a000'; ctx.lineWidth = 2;
-
-        ctx.beginPath(); ctx.arc(gc.x, cy + bobY, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-        ctx.globalAlpha = 1;
-
-    });
-
-
-
-    if (gameState === 'playing') drawPlayer();
-
-    drawSideWalls(); 
-
-
-
-    particles.forEach(p => {
-
-        ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
-
-        ctx.beginPath(); ctx.arc(p.x, p.y-cameraY, p.size*p.life, 0, Math.PI*2); ctx.fill();
-
-    });
-
-    ctx.globalAlpha = 1;
-
-    floatingTexts.forEach(f => {
-
-        ctx.globalAlpha = f.life;
-
-        ctx.font = `bold ${f.size}px "Comic Sans MS", sans-serif`; ctx.textAlign = 'center';
-
-        ctx.strokeText(f.text, f.x, f.y); ctx.fillStyle = '#fff'; ctx.fillText(f.text, f.x, f.y);
-
-    });
-
-    ctx.globalAlpha = 1;
-
-    if (gameState === 'playing') drawHUD();
-
-}
-
-
-
-function gameLoop() {
-
-    update();
-
-    draw();
-
-    requestAnimationFrame(gameLoop);
-
-}
-
-
-
-function drawSideWalls() {
-
-    let gradL = ctx.createLinearGradient(0, 0, BORDER_W, 0);
-
-    gradL.addColorStop(0, "#050a05"); gradL.addColorStop(1, "#1a3a15");
-
-    ctx.fillStyle = gradL; ctx.fillRect(0, 0, BORDER_W, H);
-
-    let gradR = ctx.createLinearGradient(PLAY_RIGHT, 0, W, 0);
-
-    gradR.addColorStop(0, "#1a3a15"); gradR.addColorStop(1, "#050a05");
-
-    ctx.fillStyle = gradR; ctx.fillRect(PLAY_RIGHT, 0, BORDER_W, H);
-
-}
-
-requestAnimationFrame(gameLoop);
-
+$("btn-reset").addEventListener("click",()=>{
+  if(confirm("Réinitialiser et revenir à la liste par défaut ? Tes ajouts et notes seront perdus.")){
+    localStorage.removeItem(STORAGE_KEY);load();render();
+  }
+});
+load();render();
 </script>
-
 </body>
-
 </html>
