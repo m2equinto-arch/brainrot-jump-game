@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#fafaf7">
 <title>Films Cultes — Dashboard</title>
 <style>
   :root {
@@ -11,14 +12,13 @@
     --surface-2: #f1efe8;
     --text: #2c2c2a;
     --text-muted: #5f5e5a;
-    --text-soft: #888780;
     --border: rgba(0,0,0,0.12);
     --border-strong: rgba(0,0,0,0.22);
     --accent: #378ADD;
     --danger: #A32D2D;
     --star: #BA7517;
-    --radius: 8px;
-    --radius-lg: 12px;
+    --radius: 10px;
+    --radius-lg: 14px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -27,87 +27,116 @@
       --surface-2: #2e2e2c;
       --text: #f1efe8;
       --text-muted: #b4b2a9;
-      --text-soft: #888780;
       --border: rgba(255,255,255,0.14);
       --border-strong: rgba(255,255,255,0.25);
     }
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
-    line-height: 1.6;
+    line-height: 1.5;
     min-height: 100vh;
+    font-size: 16px;
   }
-  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-  h1 { font-size: 26px; font-weight: 500; margin: 0 0 0.25rem; }
-  .subtitle { color: var(--text-muted); font-size: 14px; margin: 0 0 1.75rem; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
-  .stat-card { background: var(--surface-2); border-radius: var(--radius); padding: 1rem; }
-  .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
-  .stat-value { font-size: 24px; font-weight: 500; }
-  .panel { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
-  .panel-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
-  .form-grid { display: grid; grid-template-columns: 2fr 1.5fr 90px 1fr auto; gap: 8px; align-items: center; }
-  input, select, button, textarea { font-family: inherit; font-size: 14px; color: var(--text); background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 8px 12px; height: 36px; transition: border-color 0.15s, box-shadow 0.15s; }
-  input:hover, select:hover { border-color: var(--border-strong); }
-  input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(55,138,221,0.18); }
-  button { cursor: pointer; background: var(--surface); white-space: nowrap; }
-  button:hover { background: var(--surface-2); }
-  button:active { transform: scale(0.98); }
-  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
-  .tabs { display: flex; gap: 4px; background: var(--surface-2); border-radius: var(--radius); padding: 3px; }
-  .tab-btn { border: none; background: transparent; padding: 6px 14px; font-size: 13px; border-radius: 6px; color: var(--text-muted); height: auto; }
-  .tab-btn:hover { background: transparent; color: var(--text); }
-  .tab-btn.active { background: var(--surface); color: var(--text); font-weight: 500; }
-  #search { flex: 1; min-width: 160px; }
-  .film-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--surface); margin-bottom: 8px; }
-  .film-title { font-weight: 500; font-size: 15px; }
-  .film-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-  .genre-pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 0.25rem; }
+  .subtitle { color: var(--text-muted); font-size: 14px; margin: 0 0 1.25rem; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .stat-card { background: var(--surface-2); border-radius: var(--radius); padding: 0.75rem 0.5rem; text-align: center; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .stat-value { font-size: 20px; font-weight: 600; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1rem; }
+  .panel-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .form-grid { display: flex; flex-direction: column; gap: 8px; }
+  .form-row { display: grid; grid-template-columns: 1fr 100px; gap: 8px; }
+  input, select, button, textarea {
+    font-family: inherit; font-size: 16px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 12px; height: 44px; width: 100%;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(55,138,221,0.2);
+  }
+  button { cursor: pointer; background: var(--surface); white-space: nowrap; font-weight: 500; }
+  button:active { transform: scale(0.97); background: var(--surface-2); }
+  .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn-primary:active { background: var(--text-muted); }
+  .controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface-2); border-radius: var(--radius); padding: 4px; }
+  .tab-btn { border: none; background: transparent; padding: 10px; font-size: 14px; border-radius: 8px; color: var(--text-muted); height: auto; font-weight: 500; }
+  .tab-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .filter-row { display: grid; grid-template-columns: 1fr 140px; gap: 8px; }
+  .film-row { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); margin-bottom: 10px; }
+  .film-info { display: flex; flex-direction: column; gap: 4px; }
+  .film-title { font-weight: 600; font-size: 15px; line-height: 1.35; }
+  .film-meta { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .genre-pill { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
   .film-actions { display: flex; gap: 6px; align-items: center; }
-  .btn-danger { color: var(--danger); }
-  .rating { display: flex; gap: 2px; margin-right: 4px; }
-  .star { cursor: pointer; font-size: 16px; color: var(--border-strong); user-select: none; transition: color 0.1s; }
+  .film-actions button { flex: 1; min-width: 0; height: 40px; font-size: 13px; padding: 6px 10px; }
+  .btn-del { flex: 0 0 44px !important; color: var(--danger); font-size: 18px !important; }
+  .rating { display: flex; gap: 4px; justify-content: center; padding: 6px; background: var(--surface-2); border-radius: var(--radius); }
+  .star { cursor: pointer; font-size: 24px; color: var(--border-strong); user-select: none; padding: 4px 6px; line-height: 1; }
   .star.on { color: var(--star); }
-  .star:hover { color: var(--star); }
-  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 14px; }
-  .footer-actions { margin-top: 1.5rem; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-  @media (max-width: 720px) {
-    .stats { grid-template-columns: repeat(2, 1fr); }
-    .form-grid { grid-template-columns: 1fr 1fr; }
-    .form-grid > button { grid-column: 1 / -1; }
-    h1 { font-size: 22px; }
+  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 14px; background: var(--surface); border-radius: var(--radius-lg); border: 1px dashed var(--border); }
+  .footer-actions { margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .footer-actions .btn-danger { color: var(--danger); grid-column: 1 / -1; }
+  @media (min-width: 720px) {
+    .container { padding: 2rem 1.5rem 4rem; }
+    h1 { font-size: 28px; }
+    .stat-card { padding: 1rem; text-align: left; }
+    .stat-value { font-size: 26px; }
+    .form-grid { display: grid; grid-template-columns: 2fr 1.5fr 1fr 100px auto; gap: 8px; }
+    .form-row { display: contents; }
+    .form-grid .btn-primary { width: auto; padding: 0 20px; }
+    .controls { flex-direction: row; align-items: center; flex-wrap: wrap; }
+    .tabs { display: inline-flex; }
+    .tab-btn { padding: 8px 16px; }
+    .filter-row { display: contents; }
+    #search { flex: 1; min-width: 180px; width: auto; }
+    #filter-genre { width: auto; }
+    .film-row { flex-direction: row; align-items: center; }
+    .film-info { flex: 1; }
+    .rating { background: transparent; padding: 0; }
+    .star { font-size: 18px; padding: 2px; }
+    .film-actions button { flex: none; }
+    .footer-actions { grid-template-columns: auto auto auto; justify-content: flex-end; }
+    .footer-actions .btn-danger { grid-column: auto; }
   }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>🎬 Films cultes</h1>
-  <p class="subtitle">Ta liste à voir et ton inventaire personnel</p>
+  <p class="subtitle">Ta liste à voir et ton inventaire</p>
   <div class="stats">
     <div class="stat-card"><div class="stat-label">À voir</div><div class="stat-value" id="stat-todo">0</div></div>
     <div class="stat-card"><div class="stat-label">Vus</div><div class="stat-value" id="stat-seen">0</div></div>
-    <div class="stat-card"><div class="stat-label">Progression</div><div class="stat-value" id="stat-pct">0%</div></div>
-    <div class="stat-card"><div class="stat-label">Note moyenne</div><div class="stat-value" id="stat-avg">–</div></div>
+    <div class="stat-card"><div class="stat-label">Progrès</div><div class="stat-value" id="stat-pct">0%</div></div>
+    <div class="stat-card"><div class="stat-label">Note</div><div class="stat-value" id="stat-avg">–</div></div>
   </div>
   <div class="panel">
     <div class="panel-title">Ajouter un film</div>
     <div class="form-grid">
       <input type="text" id="in-title" placeholder="Titre" />
       <input type="text" id="in-director" placeholder="Réalisateur" />
-      <input type="number" id="in-year" placeholder="Année" min="1900" max="2030" />
-      <select id="in-genre">
-        <option value="Drame">Drame</option><option value="Thriller">Thriller</option>
-        <option value="Sci-Fi">Sci-Fi</option><option value="Comédie">Comédie</option>
-        <option value="Action">Action</option><option value="Animation">Animation</option>
-        <option value="Romance">Romance</option><option value="Aventure">Aventure</option>
-        <option value="Crime">Crime</option><option value="Guerre">Guerre</option>
-        <option value="Western">Western</option><option value="Musical">Musical</option>
-      </select>
-      <button id="btn-add">Ajouter</button>
+      <div class="form-row">
+        <select id="in-genre">
+          <option value="Drame">Drame</option><option value="Thriller">Thriller</option>
+          <option value="Sci-Fi">Sci-Fi</option><option value="Comédie">Comédie</option>
+          <option value="Action">Action</option><option value="Animation">Animation</option>
+          <option value="Romance">Romance</option><option value="Aventure">Aventure</option>
+          <option value="Crime">Crime</option><option value="Guerre">Guerre</option>
+          <option value="Western">Western</option><option value="Musical">Musical</option>
+        </select>
+        <input type="number" id="in-year" placeholder="Année" min="1900" max="2030" inputmode="numeric" />
+      </div>
+      <button id="btn-add" class="btn-primary">+ Ajouter le film</button>
     </div>
   </div>
   <div class="controls">
@@ -115,13 +144,15 @@
       <button class="tab-btn active" data-tab="todo">À voir</button>
       <button class="tab-btn" data-tab="seen">Vus</button>
     </div>
-    <input type="text" id="search" placeholder="Rechercher un titre ou réalisateur..." />
-    <select id="filter-genre" style="width: auto;"><option value="">Tous genres</option></select>
+    <div class="filter-row">
+      <input type="text" id="search" placeholder="Rechercher..." />
+      <select id="filter-genre"><option value="">Tous genres</option></select>
+    </div>
   </div>
   <div id="list"></div>
   <div class="footer-actions">
-    <button id="btn-export">Exporter (JSON)</button>
-    <button id="btn-import">Importer</button>
+    <button id="btn-export">↓ Exporter</button>
+    <button id="btn-import">↑ Importer</button>
     <input type="file" id="file-import" accept="application/json" style="display:none" />
     <button id="btn-reset" class="btn-danger">Réinitialiser</button>
   </div>
@@ -197,14 +228,27 @@ function render(){
     const[bg,fg]=GENRE_COLORS[f.genre]||["#F1EFE8","#444441"];
     const pill=`<span class="genre-pill" style="background:${bg};color:${fg};">${f.genre}</span>`;
     const rating=f.seen?`<div class="rating" data-id="${f.id}">${[1,2,3,4,5].map(n=>`<span class="star ${n<=f.rating?'on':''}" data-n="${n}">★</span>`).join("")}</div>`:"";
-    const toggleLabel=f.seen?"↶ À revoir":"✓ Vu";
-    return `<div class="film-row"><div><div class="film-title">${escapeHtml(f.title)} ${pill}</div><div class="film-meta">${escapeHtml(f.director)} · ${f.year}</div></div><div class="film-actions">${rating}<button data-act="toggle" data-id="${f.id}">${toggleLabel}</button><button data-act="del" data-id="${f.id}" class="btn-danger">✕</button></div></div>`;
+    const toggleLabel=f.seen?"↶ À revoir":"✓ Marquer vu";
+    return `<div class="film-row">
+      <div class="film-info">
+        <div class="film-title">${escapeHtml(f.title)}</div>
+        <div class="film-meta">${pill}<span>${escapeHtml(f.director)} · ${f.year}</span></div>
+      </div>
+      ${rating}
+      <div class="film-actions">
+        <button data-act="toggle" data-id="${f.id}">${toggleLabel}</button>
+        <button data-act="del" data-id="${f.id}" class="btn-del">✕</button>
+      </div>
+    </div>`;
   }).join("");
   container.querySelectorAll("button[data-act]").forEach(b=>{
     b.addEventListener("click",()=>{
       const id=b.dataset.id;
       if(b.dataset.act==="toggle"){const f=films.find(x=>x.id===id);f.seen=!f.seen;if(!f.seen)f.rating=0;}
-      else if(b.dataset.act==="del"){films=films.filter(x=>x.id!==id);}
+      else if(b.dataset.act==="del"){
+        if(!confirm("Supprimer ce film ?")) return;
+        films=films.filter(x=>x.id!==id);
+      }
       save();render();
     });
   });
