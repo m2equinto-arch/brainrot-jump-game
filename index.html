@@ -7,28 +7,29 @@
 <title>Films Cultes — Dashboard</title>
 <style>
   :root {
-      /* Un blanc pur pour le fond et les cartes pour un look Apple/Airbnb */
-    --bg: #ffffff;
+    --bg: #fafaf7;
     --surface: #ffffff;
-    
-    /* Un gris ultra-léger pour différencier certaines zones (sidebar ou header) */
-    --surface-2: #f8f9fa;
-    
-    /* Un texte noir profond mais pas agressif pour une lecture parfaite */
-    --text: #1d1d1f;
-    --text-muted: #86868b;
-    
-    /* Des bordures très fines pour ne pas alourdir le design */
-    --border: #e5e5e7;
-    --border-strong: #d2d2d7;
-    
-    /* Des couleurs vives qui "pop" sur le blanc */
-    --accent: #0066cc;
-    --danger: #ff3b30;
-    --star: #ffcc00;
-    
-    --radius: 12px;
-    --radius-lg: 16px;
+    --surface-2: #f1efe8;
+    --text: #2c2c2a;
+    --text-muted: #5f5e5a;
+    --border: rgba(0,0,0,0.12);
+    --border-strong: rgba(0,0,0,0.22);
+    --accent: #378ADD;
+    --danger: #A32D2D;
+    --star: #BA7517;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #242422;
+      --surface-2: #2e2e2c;
+      --text: #f1efe8;
+      --text-muted: #b4b2a9;
+      --border: rgba(255,255,255,0.14);
+      --border-strong: rgba(255,255,255,0.25);
+    }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { -webkit-text-size-adjust: 100%; }
@@ -44,6 +45,31 @@
   .container { max-width: 1100px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
   h1 { font-size: 24px; font-weight: 600; margin: 0 0 0.25rem; }
   .subtitle { color: var(--text-muted); font-size: 14px; margin: 0 0 1.25rem; }
+
+  /* Random button */
+  .random-hero {
+    background: linear-gradient(135deg, #3C3489 0%, #534AB7 100%);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    color: white;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.15s;
+    height: auto;
+    font-weight: 500;
+  }
+  .random-hero:active { transform: scale(0.98); }
+  .random-icon { font-size: 28px; line-height: 1; }
+  .random-text { flex: 1; text-align: left; }
+  .random-title { font-size: 15px; font-weight: 600; }
+  .random-sub { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+  .random-arrow { font-size: 20px; opacity: 0.7; }
+
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
   .stat-card { background: var(--surface-2); border-radius: var(--radius); padding: 0.75rem 0.5rem; text-align: center; }
   .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -85,9 +111,50 @@
   .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 14px; background: var(--surface); border-radius: var(--radius-lg); border: 1px dashed var(--border); }
   .footer-actions { margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .footer-actions .btn-danger { color: var(--danger); grid-column: 1 / -1; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.show { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.25rem;
+    max-width: 420px;
+    width: 100%;
+    animation: slideUp 0.25s ease;
+  }
+  .modal-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 12px; font-weight: 600;
+  }
+  .modal-spinner { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .modal-film-title { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+  .modal-film-meta {
+    font-size: 14px; color: var(--text-muted);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .modal-actions { display: flex; flex-direction: column; gap: 8px; }
+  .modal-actions button { width: 100%; }
+  .modal-close { background: transparent; border-color: var(--border); }
+
   @media (min-width: 720px) {
     .container { padding: 2rem 1.5rem 4rem; }
     h1 { font-size: 28px; }
+    .random-hero { padding: 1.25rem 1.5rem; }
+    .random-title { font-size: 16px; }
     .stat-card { padding: 1rem; text-align: left; }
     .stat-value { font-size: 26px; }
     .form-grid { display: grid; grid-template-columns: 2fr 1.5fr 1fr 100px auto; gap: 8px; }
@@ -106,6 +173,7 @@
     .film-actions button { flex: none; }
     .footer-actions { grid-template-columns: auto auto auto; justify-content: flex-end; }
     .footer-actions .btn-danger { grid-column: auto; }
+    .modal-actions { flex-direction: row; }
   }
 </style>
 </head>
@@ -113,12 +181,23 @@
 <div class="container">
   <h1>🎬 Films cultes</h1>
   <p class="subtitle">Ta liste à voir et ton inventaire</p>
+
+  <button class="random-hero" id="btn-random">
+    <div class="random-icon">🎲</div>
+    <div class="random-text">
+      <div class="random-title">Tire au hasard</div>
+      <div class="random-sub">Laisse le destin choisir ton prochain film</div>
+    </div>
+    <div class="random-arrow">→</div>
+  </button>
+
   <div class="stats">
     <div class="stat-card"><div class="stat-label">À voir</div><div class="stat-value" id="stat-todo">0</div></div>
     <div class="stat-card"><div class="stat-label">Vus</div><div class="stat-value" id="stat-seen">0</div></div>
     <div class="stat-card"><div class="stat-label">Progrès</div><div class="stat-value" id="stat-pct">0%</div></div>
     <div class="stat-card"><div class="stat-label">Note</div><div class="stat-value" id="stat-avg">–</div></div>
   </div>
+
   <div class="panel">
     <div class="panel-title">Ajouter un film</div>
     <div class="form-grid">
@@ -138,6 +217,7 @@
       <button id="btn-add" class="btn-primary">+ Ajouter le film</button>
     </div>
   </div>
+
   <div class="controls">
     <div class="tabs">
       <button class="tab-btn active" data-tab="todo">À voir</button>
@@ -148,7 +228,9 @@
       <select id="filter-genre"><option value="">Tous genres</option></select>
     </div>
   </div>
+
   <div id="list"></div>
+
   <div class="footer-actions">
     <button id="btn-export">↓ Exporter</button>
     <button id="btn-import">↑ Importer</button>
@@ -156,6 +238,23 @@
     <button id="btn-reset" class="btn-danger">Réinitialiser</button>
   </div>
 </div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-spinner" id="modal-spinner">🎲</span>
+      <span id="modal-label">Et le gagnant est...</span>
+    </div>
+    <div class="modal-film-title" id="modal-title">—</div>
+    <div class="modal-film-meta" id="modal-meta"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="modal-seen">✓ Je l'ai vu</button>
+      <button id="modal-reroll">🎲 Un autre</button>
+      <button class="modal-close" id="modal-close">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const GENRE_COLORS = {
   "Drame":["#EEEDFE","#3C3489"],"Thriller":["#F1EFE8","#444441"],"Sci-Fi":["#E6F1FB","#0C447C"],
@@ -202,11 +301,66 @@ const SEED = [
   {t:"Les Sept Samouraïs",d:"Akira Kurosawa",y:1954,g:"Aventure"}
 ];
 const STORAGE_KEY = "films-cultes-v1";
-let films = [], currentTab = "todo";
+let films = [], currentTab = "todo", currentRandomId = null;
 function load(){try{const r=localStorage.getItem(STORAGE_KEY);if(r){films=JSON.parse(r);return;}}catch(e){}films=SEED.map((f,i)=>({id:"s"+i,title:f.t,director:f.d,year:f.y,genre:f.g,seen:false,rating:0}));save();}
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(films));}catch(e){}}
 const $=(id)=>document.getElementById(id);
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function pickRandom(excludeId){
+  const pool = films.filter(f => !f.seen && f.id !== excludeId);
+  if (!pool.length) {
+    const fallback = films.filter(f => !f.seen);
+    if (!fallback.length) return null;
+    return fallback[Math.floor(Math.random()*fallback.length)];
+  }
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function showRandomModal(animate){
+  const film = pickRandom(animate ? null : currentRandomId);
+  const modal = $("modal");
+  if (!film) {
+    $("modal-title").textContent = "Aucun film à voir";
+    $("modal-meta").innerHTML = "<span>Ajoute des films ou marque certains comme à voir.</span>";
+    $("modal-seen").style.display = "none";
+    $("modal-reroll").style.display = "none";
+    modal.classList.add("show");
+    return;
+  }
+  $("modal-seen").style.display = "";
+  $("modal-reroll").style.display = "";
+  currentRandomId = film.id;
+
+  if (animate) {
+    modal.classList.add("show");
+    $("modal-label").textContent = "Tirage en cours...";
+    $("modal-spinner").style.display = "inline-block";
+    const titles = films.filter(f => !f.seen);
+    let i = 0;
+    const interval = setInterval(() => {
+      const t = titles[Math.floor(Math.random()*titles.length)];
+      $("modal-title").textContent = t.title;
+      $("modal-meta").innerHTML = "";
+      i++;
+      if (i >= 10) {
+        clearInterval(interval);
+        displayFilm(film);
+      }
+    }, 80);
+  } else {
+    displayFilm(film);
+  }
+}
+
+function displayFilm(film){
+  $("modal-label").textContent = "Et le gagnant est...";
+  $("modal-spinner").style.display = "none";
+  $("modal-title").textContent = film.title;
+  const [bg, fg] = GENRE_COLORS[film.genre] || ["#F1EFE8","#444441"];
+  $("modal-meta").innerHTML = `<span class="genre-pill" style="background:${bg};color:${fg};">${film.genre}</span><span>${escapeHtml(film.director)} · ${film.year}</span>`;
+}
+
 function render(){
   const todo=films.filter(f=>!f.seen),seen=films.filter(f=>f.seen);
   $("stat-todo").textContent=todo.length;$("stat-seen").textContent=seen.length;
@@ -262,6 +416,19 @@ function render(){
     });
   });
 }
+
+$("btn-random").addEventListener("click", () => showRandomModal(true));
+$("modal-reroll").addEventListener("click", () => showRandomModal(true));
+$("modal-close").addEventListener("click", () => { $("modal").classList.remove("show"); currentRandomId = null; });
+$("modal").addEventListener("click", e => { if (e.target === $("modal")) { $("modal").classList.remove("show"); currentRandomId = null; } });
+$("modal-seen").addEventListener("click", () => {
+  if (!currentRandomId) return;
+  const f = films.find(x => x.id === currentRandomId);
+  if (f) { f.seen = true; save(); render(); }
+  $("modal").classList.remove("show");
+  currentRandomId = null;
+});
+
 document.querySelectorAll(".tab-btn").forEach(b=>{
   b.addEventListener("click",()=>{
     document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
